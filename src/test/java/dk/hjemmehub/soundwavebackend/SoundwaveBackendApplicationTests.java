@@ -1,0 +1,13 @@
+package dk.hjemmehub.soundwavebackend;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class SoundwaveBackendApplicationTests {
+
+    @Test
+    void contextLoads() {
+    }
+
+}
