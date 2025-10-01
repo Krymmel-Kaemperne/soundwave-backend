@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class InitData implements CommandLineRunner {
@@ -28,44 +30,43 @@ public class InitData implements CommandLineRunner {
         hallRepository.save(hall1);
         hallRepository.save(hall2);
 
-        Event rockConcert = new Event(101,
+
+        Event rockConcert = new Event(
                 "Rock Concert",
                 "Live rock music",
+                BigDecimal.valueOf(100),
                 "Scheduled",
                 LocalDateTime.of(2025, 11, 1, 20, 0),
                 hall1
         );
 
         Event jazzNight = new Event(
-                102,
                 "Jazz Night",
                 "Evening of smooth jazz",
+                BigDecimal.valueOf(80),
                 "Scheduled",
                 LocalDateTime.of(2025, 11, 5, 19, 30),
                 hall1
         );
 
         Event comedyShow = new Event(
-                103,
                 "Comedy Show",
                 "Stand-up comedy special",
+                BigDecimal.valueOf(50),
                 "Scheduled",
                 LocalDateTime.of(2025, 11, 3, 21, 0),
                 hall2
         );
 
         Event indieBand = new Event(
-                104,
                 "Indie Band Performance",
                 "Up-and-coming local indie band",
+                BigDecimal.valueOf(500),
                 "Scheduled",
                 LocalDateTime.of(2025, 11, 10, 20, 30),
                 hall2
         );
 
-        eventRepository.save(rockConcert);
-        eventRepository.save(jazzNight);
-        eventRepository.save(comedyShow);
-        eventRepository.save(indieBand);
+        eventRepository.saveAll(List.of(rockConcert, jazzNight, comedyShow, indieBand));
     }
 }

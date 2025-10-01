@@ -2,6 +2,7 @@ package dk.hjemmehub.soundwavebackend.Model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +17,28 @@ public class Event {
     private String title;
     private String description;
     private String status;
+
+    @Column(name ="event_date")
     private LocalDateTime eventDate;
+
+
+    @Column(name="base_price")
+    private BigDecimal basePrice;
+
+
+    public String getImageBase64() {
+        return imageBase64;
+    }
+
+    public void setImageBase64(String imageBase64) {
+        this.imageBase64 = imageBase64;
+    }
+
+
+    @Lob
+    @Column(name = "image_base64", columnDefinition = "LONGTEXT")
+    private String imageBase64;
+
 
     @ManyToOne
     @JoinColumn(name = "hall_id", referencedColumnName = "hall_id")
@@ -24,13 +46,27 @@ public class Event {
 
     public Event() {}
 
-    public Event(int eventId, String title, String description, String status, LocalDateTime eventDate, Hall hall) {
-        this.eventId = eventId;
+
+
+    public Event(String title, String description, BigDecimal basePrice, String status,
+                 LocalDateTime eventDate, Hall hall) {
         this.title = title;
         this.description = description;
         this.status = status;
         this.eventDate = eventDate;
         this.hall = hall;
+        this.basePrice=basePrice;
+    }
+
+    public Event(int eventId, String title, String description, String status, LocalDateTime eventDate, Hall hall, String imageBase64) {
+        this.eventId = eventId;
+        this.title = title;
+        this.description = description;
+        this.status = status;
+        this.imageBase64 = imageBase64;
+        this.eventDate = eventDate;
+        this.hall = hall;
+
     }
 
 
@@ -53,6 +89,14 @@ public class Event {
 
     public String getDescription() {
         return description;
+    }
+
+    public BigDecimal getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(BigDecimal basePrice) {
+        this.basePrice = basePrice;
     }
 
     public void setDescription(String description) {
