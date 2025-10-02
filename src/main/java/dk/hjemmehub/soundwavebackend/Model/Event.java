@@ -25,19 +25,7 @@ public class Event {
     @Column(name="base_price")
     private BigDecimal basePrice;
 
-
-    public String getImageBase64() {
-        return imageBase64;
-    }
-
-    public void setImageBase64(String imageBase64) {
-        this.imageBase64 = imageBase64;
-    }
-
-
-    @Lob
-    @Column(name = "image_base64", columnDefinition = "LONGTEXT")
-    private String imageBase64;
+    private String imageUrl;
 
 
     @ManyToOne
@@ -58,12 +46,12 @@ public class Event {
         this.basePrice=basePrice;
     }
 
-    public Event(int eventId, String title, String description, String status, LocalDateTime eventDate, Hall hall, String imageBase64) {
+    public Event(int eventId, String title, String description, String status, LocalDateTime eventDate, Hall hall, String imageUrl) {
         this.eventId = eventId;
         this.title = title;
         this.description = description;
         this.status = status;
-        this.imageBase64 = imageBase64;
+        this.imageUrl = imageUrl;
         this.eventDate = eventDate;
         this.hall = hall;
 
@@ -127,7 +115,11 @@ public class Event {
         this.hall = hall;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
 
-
-
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }
