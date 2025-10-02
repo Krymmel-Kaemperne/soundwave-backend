@@ -15,7 +15,9 @@ public class Event {
     private int eventId;
 
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String description;
+
     private String status;
 
     @Column(name ="event_date")
