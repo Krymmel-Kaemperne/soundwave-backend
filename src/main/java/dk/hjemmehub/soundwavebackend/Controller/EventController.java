@@ -17,16 +17,17 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/events")
-@RequestMapping("/api/events")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class EventController {
 
     private final EventRepository eventRepository;
     private final HallRepository hallRepository;
+    private final SeatService seatService;
 
-    public EventController(EventRepository eventRepository, HallRepository hallRepository) {
+    public EventController(EventRepository eventRepository, HallRepository hallRepository, SeatService seatService) {
         this.eventRepository = eventRepository;
         this.hallRepository = hallRepository;
+        this.seatService = seatService;
     }
 
     @GetMapping
@@ -34,7 +35,7 @@ public class EventController {
         return eventRepository.findAll();
     }
     @GetMapping("/{id}")
-    public Event getEventById(@PathVariable int id) {
+    public Event getEventById(@PathVariable Long id) {
         return eventRepository.findById(id).orElseThrow();
     }
 
@@ -45,15 +46,16 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    public Event updateEvent(@PathVariable int id, @RequestBody Event event) {
+    public Event updateEvent(@PathVariable Long id, @RequestBody Event event) {
         event.setEventId(id);
         return eventRepository.save(event);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEvent(@PathVariable int id) {
+    public void deleteEvent(@PathVariable Long id) {
         eventRepository.deleteById(id);
+    }
 
     // keep simple event endpoints here (no direct seat mutations)
     @GetMapping("/{eventId}/seats")

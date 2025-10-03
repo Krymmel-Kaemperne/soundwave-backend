@@ -10,7 +10,10 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long seatId;
 
+    @Column(name = "row_no")
     private int rowNumber;
+
+    @Column(name = "seat_no")
     private int seatNumber;
 
     @ManyToOne

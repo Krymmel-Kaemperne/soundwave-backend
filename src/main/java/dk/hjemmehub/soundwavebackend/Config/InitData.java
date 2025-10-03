@@ -27,8 +27,9 @@ public class InitData implements CommandLineRunner {
             return;
         }
 
-        Hall hall1 = new Hall(1, "Main Concert Hall", 5000, "City Center");
-        Hall hall2 = new Hall(2, "Small Club Stage", 500, "Downtown");
+        // let the database generate IDs
+        Hall hall1 = new Hall(null, "Main Concert Hall", 5000, "City Center");
+        Hall hall2 = new Hall(null, "Small Club Stage", 500, "Downtown");
 
         hallRepository.save(hall1);
         hallRepository.save(hall2);

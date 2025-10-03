@@ -23,10 +23,7 @@ public class HallController {
         return hallRepository.findAll();
     }
 
-   @GetMapping
-    public List<Hall>getAllHalls() {
-       return hallRepository.findAll();
-   }
+   
 
    @GetMapping ("/{hallId}")
     public Hall getHallById(@PathVariable Long hallId) {

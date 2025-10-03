@@ -4,14 +4,17 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 @Entity
 @Table
 public class Hall {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "hall_id")
-    private int hallId;
+    private Long hallId;
 
     private String name;
     private int capacity;
@@ -19,18 +22,18 @@ public class Hall {
 
     public Hall() {}
 
-    public Hall(int hallId, String name, int capacity, String location) {
+    public Hall(Long hallId, String name, int capacity, String location) {
         this.hallId = hallId;
         this.name = name;
         this.capacity = capacity;
         this.location = location;
     }
 
-    public int getHallId() {
+    public Long getHallId() {
         return hallId;
     }
 
-    public void setHallId(int hallId) {
+    public void setHallId(Long hallId) {
         this.hallId = hallId;
     }
 
