@@ -19,9 +19,10 @@ public class EventController {
         this.seatService = seatService;
     }
 
-    //FAKE GET METODEN (Slet "Fake" til sidst, så er det rigtigt)
+    // keep simple event endpoints here (no direct seat mutations)
     @GetMapping("/{eventId}/seats")
     public List<SeatDto> getSeatsByEvent(@PathVariable Long eventId) {
         return seatService.getSeatsForEvent(eventId);
     }
+
 }

@@ -41,4 +41,12 @@ public class Seat {
     public void setSeatNumber(int seatNumber) {
         this.seatNumber = seatNumber;
     }
+
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
+    }
 }
