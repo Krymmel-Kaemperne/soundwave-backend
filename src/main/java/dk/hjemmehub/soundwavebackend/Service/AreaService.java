@@ -16,32 +16,16 @@ public class AreaService {
     }
 
     //DEN RIGTIGE METODE TIL DATABASEN
-//    public List<AreaDto> getAreasForHall(Long hallId) {
-//        var areas = areaRepository.findByHall_Id(hallId);
-//
-//        return areas.stream()
-//                .map(a -> new AreaDto(
-//                        a.getAreaId(),
-//                        a.getName(),
-//                        a.getType(),
-//                        a.getCapacity()
-//                ))
-//                .toList();
-//    }
-
     public List<AreaDto> getAreasForHall(Long hallId) {
-        return List.of(
-                new AreaDto(1L, "Standing Floor", "standing", 1000),
-                new AreaDto(2L, "VIP Balcony", "seating", null)
-        );
+        var areas = areaRepository.findByHall_HallId(hallId);
+
+        return areas.stream()
+                .map(a -> new AreaDto(
+                        a.getAreaId(),
+                        a.getName(),
+                        a.getType(),
+                        a.getCapacity()
+                ))
+                .toList();
     }
-
-    //FAKE
-    public StandingDto getStandingAreaFake(Long areaId) {
-        // bare fake data – forestil dig det er dit "Standing Floor"
-        return new StandingDto(areaId, "Standing Area", 1000, 150);
-    }
-
-
-
 }

@@ -4,15 +4,13 @@ import dk.hjemmehub.soundwavebackend.DTO.AreaDto;
 import dk.hjemmehub.soundwavebackend.DTO.StandingDto;
 import dk.hjemmehub.soundwavebackend.Service.AreaService;
 import dk.hjemmehub.soundwavebackend.Service.SeatService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/halls")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class AreaController {
 
     private final AreaService areaService;
@@ -35,13 +33,6 @@ public class AreaController {
         // hallId currently unused; areaId is authoritative
         seatService.setupSeats(areaId, rows, cols);
         return "setup-complete";
-    }
-
-    // GET /halls/1/standing
-    @GetMapping("/{hallId}/standing")
-    public StandingDto getStanding(@PathVariable Long hallId) {
-        // bruger hallId som “areaId" her i fake-test
-        return areaService.getStandingAreaFake(hallId);
     }
 
 
