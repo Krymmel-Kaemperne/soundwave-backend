@@ -1,3 +1,4 @@
+
 package dk.hjemmehub.soundwavebackend.Model;
 
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ public class Event {
     private int eventId;
 
     private String title;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 

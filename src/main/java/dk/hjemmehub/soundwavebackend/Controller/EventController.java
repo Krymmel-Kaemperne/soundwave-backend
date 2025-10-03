@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
-@CrossOrigin(origins = {"http://localhost:5500", "http://127.0.0.1:5500"})
+@RequestMapping("/api/events")
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 public class EventController {
 
     private final EventRepository eventRepository;
@@ -35,6 +35,18 @@ public class EventController {
     @ResponseStatus(HttpStatus.CREATED)
     public Event createEvent(@RequestBody Event event) {
         return eventRepository.save(event);
+    }
+
+    @PutMapping("/{id}")
+    public Event updateEvent(@PathVariable int id, @RequestBody Event event) {
+        event.setEventId(id);
+        return eventRepository.save(event);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteEvent(@PathVariable int id) {
+        eventRepository.deleteById(id);
     }
 
 }
