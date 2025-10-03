@@ -22,3 +22,5 @@ public class HallController {
         return hallRepository.findAll();
     }
 }
+public class HallController {
+}

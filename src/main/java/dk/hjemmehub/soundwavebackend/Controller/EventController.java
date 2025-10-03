@@ -50,3 +50,5 @@ public class EventController {
     }
 
 }
+public class EventController {
+}

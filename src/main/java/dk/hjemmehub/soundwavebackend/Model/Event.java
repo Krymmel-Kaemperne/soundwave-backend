@@ -126,4 +126,7 @@ public class Event {
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
+package dk.hjemmehub.soundwavebackend.Model;
+
+public class Event {
 }
