@@ -1,29 +1,36 @@
 package dk.hjemmehub.soundwavebackend.Model;
 
-import jakarta.persistence.*;
-
-import java.util.List;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Hall")
+@Table
 public class Hall {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long hallId;
+    @Column(name = "hall_id")
+    private int hallId;
 
     private String name;
-    private String description;
+    private int capacity;
+    private String location;
 
-    @OneToMany(mappedBy = "hall")
-    private List<Area> areas;
+    public Hall() {}
 
-    // getters/setters
-    public Long getId() {
+    public Hall(int hallId, String name, int capacity, String location) {
+        this.hallId = hallId;
+        this.name = name;
+        this.capacity = capacity;
+        this.location = location;
+    }
+
+    public int getHallId() {
         return hallId;
     }
 
-    public void setId(Long hallId) {
+    public void setHallId(int hallId) {
         this.hallId = hallId;
     }
 
@@ -35,19 +42,19 @@ public class Hall {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public int getCapacity() {
+        return capacity;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 
-    public List<Area> getArea() {
-        return areas;
+    public String getLocation() {
+        return location;
     }
 
-    public void setAreas(List<Area> areas) {
-        this.areas = areas;
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

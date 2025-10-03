@@ -12,11 +12,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/halls")
 public class HallController {
-   private final HallRepository hallRepository;
+    private final HallRepository hallRepository;
 
-   public HallController(HallRepository hallRepository) {
-       this.hallRepository = hallRepository;
-   }
+    public HallController(HallRepository hallRepository) {
+        this.hallRepository = hallRepository;
+    }
+
+    @GetMapping
+    public List<Hall> getAllHalls() {
+        return hallRepository.findAll();
+    }
 
    @GetMapping
     public List<Hall>getAllHalls() {
