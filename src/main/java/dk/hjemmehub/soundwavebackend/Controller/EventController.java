@@ -1,5 +1,11 @@
 package dk.hjemmehub.soundwavebackend.Controller;
 
+import dk.hjemmehub.soundwavebackend.DTO.SeatDto;
+import dk.hjemmehub.soundwavebackend.Service.SeatService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import dk.hjemmehub.soundwavebackend.Model.Event;
 import dk.hjemmehub.soundwavebackend.Repository.EventRepository;
 import dk.hjemmehub.soundwavebackend.Repository.HallRepository;
@@ -10,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/events")
 @RequestMapping("/api/events")
 @CrossOrigin(origins = "http://127.0.0.1:5500")
 public class EventController {
@@ -47,8 +54,11 @@ public class EventController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteEvent(@PathVariable int id) {
         eventRepository.deleteById(id);
+
+    // keep simple event endpoints here (no direct seat mutations)
+    @GetMapping("/{eventId}/seats")
+    public List<SeatDto> getSeatsByEvent(@PathVariable Long eventId) {
+        return seatService.getSeatsForEvent(eventId);
     }
 
-}
-public class EventController {
 }

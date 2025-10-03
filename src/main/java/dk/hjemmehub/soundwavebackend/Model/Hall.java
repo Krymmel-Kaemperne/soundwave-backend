@@ -58,5 +58,3 @@ public class Hall {
         this.location = location;
     }
 }
-public class Hall {
-}
