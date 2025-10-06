@@ -179,9 +179,12 @@ public class SeatService {
             List<SeatMapDto> seatDtosForArea;
 
             if (area.getType().equals("standing")) {
-                // For standing areas, get booked count from InitData's simulation or an actual booking system
-                bookedCountForArea = area.getCapacity() != null ? (area.getCapacity() - 250) : 0; // Use 250 as available, as in InitData
-                seatDtosForArea = List.of(); // No individual seats for standing areas
+                // Beregn bookedCount baseret på EventSeats med seat == null og reserved == true
+                bookedCountForArea = (int) allEventSeats.stream()
+                        .filter(es -> es.getSeat() == null && es.isReserved())
+                        .count();
+
+                seatDtosForArea = List.of(); // Ingen individuelle seats
             } else { // Seating area
                 List<EventSeat> seatingEventSeats = seatingSeatsByArea.getOrDefault(area, List.of());
                 bookedCountForArea = (int) seatingEventSeats.stream().filter(EventSeat::isReserved).count();
