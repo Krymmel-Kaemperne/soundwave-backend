@@ -42,7 +42,10 @@ public class EventController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Event createEvent(@RequestBody Event event) {
-        return eventRepository.save(event);
+        Event savedEvent = eventRepository.save(event);
+        // Automatically generate seats for the newly created event
+        seatService.generateSeatsForEvent(savedEvent.getEventId());
+        return savedEvent;
     }
 
     @PutMapping("/{id}")

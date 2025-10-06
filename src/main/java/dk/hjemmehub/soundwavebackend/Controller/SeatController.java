@@ -35,6 +35,18 @@ public class SeatController {
         return ResponseEntity.ok(map);
     }
 
+        @PostMapping("/generate-seats")
+        public ResponseEntity<String> generateSeatsForEvent(@PathVariable Long eventId)
+        {
+            try
+            {
+                seatService.generateSeatsForEvent(eventId);
+                return ResponseEntity.ok("Seats generated successfully for event " + eventId);
+            } catch (Exception e)
+            {
+                return ResponseEntity.badRequest().body("Error generating seats: " + e.getMessage());
+            }
+        }
 }
 
 

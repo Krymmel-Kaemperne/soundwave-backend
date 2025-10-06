@@ -10,7 +10,17 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/upload")
-@CrossOrigin(origins = {"http://127.0.0.1:5500", "http://localhost:5500"}) // hvis du kører via Live Server
+@CrossOrigin(origins = {
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://127.0.0.1:8000",
+        "http://localhost:8000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+        "http://127.0.0.1:8080",
+        "http://localhost:8080",
+        "file:///"  // For local file access
+}) // Updated to include more common development ports
 public class ImageUploadController {
 
     @PostMapping("/image")
@@ -22,7 +32,6 @@ public class ImageUploadController {
         try {
             // Lav et unikt filnavn
             String fileName = UUID.randomUUID() + "-" + file.getOriginalFilename();
-
 
             Path uploadDir = Paths.get("../soundwave-frontend//images");
             Files.createDirectories(uploadDir);

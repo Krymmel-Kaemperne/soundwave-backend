@@ -90,6 +90,50 @@ public class SeatService {
         eventSeatRepository.saveAll(seats);
     }
 
+    @Transactional
+    public void generateSeatsForEvent(Long eventId) {
+        var event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        // Get all areas for this event's hall
+        List<Area> areas = areaRepository.findByHall_HallId(event.getHall().getHallId());
+
+        for (Area area : areas) {
+            if (area.getType().equals("seating")) {
+                // Check if seats already exist for this area
+                if (!seatRepository.existsByArea_AreaId(area.getAreaId())) {
+                    // Create seats for the area if they don't exist
+                    int rows = getRowCountForArea(area.getName());
+                    int cols = getSeatsPerRowForArea(area.getName());
+                    setupSeats(area.getAreaId(), rows, cols);
+                }
+
+                // Create EventSeat records linking this event to all seats in the area
+                List<Seat> seats = seatRepository.findByArea_AreaId(area.getAreaId());
+                for (Seat seat : seats) {
+                    // Check if EventSeat already exists
+                    if (!eventSeatRepository.existsByEvent_EventIdAndSeat_SeatId(eventId, seat.getSeatId())) {
+                        EventSeat eventSeat = new EventSeat();
+                        eventSeat.setEvent(event);
+                        eventSeat.setSeat(seat);
+                        eventSeat.setReserved(false);
+                        eventSeatRepository.save(eventSeat);
+                    }
+                }
+            }
+        }
+    }
+
+    private int getRowCountForArea(String areaName) {
+        if (areaName.contains("Bag")) return 6;  // Back area has 6 rows
+        return 2;  // Left and right areas have 2 rows
+    }
+
+    private int getSeatsPerRowForArea(String areaName) {
+        if (areaName.contains("Bag")) return 15;  // Back area has 15 seats per row
+        return 10;  // Left and right areas have 10 seats per row
+    }
+
     // Hjælper til labels A1, B3 osv. - Denne metode er ikke brugt her, men du har den.
     private String toRowLabel(int rowNumber, int seatNumber) {
         return toRowLetter(rowNumber) + String.valueOf(seatNumber);
