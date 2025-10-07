@@ -210,6 +210,6 @@ public class SeatService {
             hallName = areaMapDtos.get(0).getAreaName();
         }
 
-        return new EventMapDto(event.getEventId(), event.getTitle(), hallName, areaMapDtos);
+        return new EventMapDto(event.getEventId(), event.getTitle(), hallName, areaMapDtos, event.getIsVisible());
     }
 }
