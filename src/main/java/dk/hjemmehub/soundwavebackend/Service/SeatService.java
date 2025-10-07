@@ -160,34 +160,56 @@ public class SeatService {
         }
     }
 
+
+    //Used for pricemodifier
+    private boolean isBalcony(String areaName) {
+        if (areaName == null) return false;
+        String n = areaName.toLowerCase();
+        return n.contains("balcony") || n.contains("balkon");
+    }
+
     public EventMapDto buildEventMap(Long eventId) {
-        var event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event not found"));
+        var event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
 
         List<EventSeat> allEventSeats = eventSeatRepository.findByEvent_EventId(eventId);
 
         // Group actual seating EventSeats by their Area for easier processing
         Map<Area, List<EventSeat>> seatingSeatsByArea = allEventSeats.stream()
-                .filter(es -> es.getSeat() != null && es.getSeat().getArea() != null) // Ensure it's a seating seat
+                .filter(es -> es.getSeat() != null && es.getSeat().getArea() != null)
                 .collect(Collectors.groupingBy(es -> es.getSeat().getArea()));
 
         // Get all areas associated with the event's hall, including standing areas
-        List<Area> allAreasInHall = areaRepository.findByHall_HallId(event.getHall().getHallId());
+        List<Area> allAreasInHall =
+                areaRepository.findByHall_HallId(event.getHall().getHallId());
 
         var areaMapDtos = allAreasInHall.stream().map(area -> {
             int bookedCountForArea;
-            Double priceForArea = event.getBasePrice() != null ? event.getBasePrice().doubleValue() : 0.0;
+
+            Double priceForArea = event.getBasePrice() != null
+                    ? event.getBasePrice().doubleValue()
+                    : 0.0;
+
+            if ("seating".equals(area.getType()) && isBalcony(area.getName())) {
+                priceForArea += 200.0;
+            }
+
+            final double areaPrice = priceForArea;
+
             List<SeatMapDto> seatDtosForArea;
 
-            if (area.getType().equals("standing")) {
-                // Beregn bookedCount baseret på EventSeats med seat == null og reserved == true
+            if ("standing".equals(area.getType())) {
+                // Count standing reservations (EventSeats with seat == null)
                 bookedCountForArea = (int) allEventSeats.stream()
                         .filter(es -> es.getSeat() == null && es.isReserved())
                         .count();
 
-                seatDtosForArea = List.of(); // Ingen individuelle seats
-            } else { // Seating area
-                List<EventSeat> seatingEventSeats = seatingSeatsByArea.getOrDefault(area, List.of());
-                bookedCountForArea = (int) seatingEventSeats.stream().filter(EventSeat::isReserved).count();
+                seatDtosForArea = List.of(); // no individual seats
+            } else {
+                List<EventSeat> seatingEventSeats =
+                        seatingSeatsByArea.getOrDefault(area, List.of());
+                bookedCountForArea =
+                        (int) seatingEventSeats.stream().filter(EventSeat::isReserved).count();
 
                 seatDtosForArea = seatingEventSeats.stream()
                         .filter(es -> es.getSeat() != null)
@@ -195,17 +217,34 @@ public class SeatService {
                             Seat s = es.getSeat();
                             String status = es.isReserved() ? "booked" : "free";
                             String label = toRowLetter(s.getRowNumber()) + s.getSeatNumber();
-                            return new SeatMapDto(s.getSeatId(), s.getRowNumber(), s.getSeatNumber(), status, label, area.getAreaId(), priceForArea);
+                            return new SeatMapDto(
+                                    s.getSeatId(),
+                                    s.getRowNumber(),
+                                    s.getSeatNumber(),
+                                    status,
+                                    label,
+                                    area.getAreaId(),
+                                    areaPrice // use the final copy
+                            );
                         })
-                        .sorted(java.util.Comparator.comparingInt(SeatMapDto::getRowNumber).thenComparingInt(SeatMapDto::getSeatNumber))
+                        .sorted(java.util.Comparator
+                                .comparingInt(SeatMapDto::getRowNumber)
+                                .thenComparingInt(SeatMapDto::getSeatNumber))
                         .toList();
             }
 
-            return new AreaMapDto(area.getAreaId(), area.getName(), area.getType(), area.getCapacity(), bookedCountForArea, priceForArea, seatDtosForArea);
-        }).toList(); // Samler alle AreaMapDtos her
+            return new AreaMapDto(
+                    area.getAreaId(),
+                    area.getName(),
+                    area.getType(),
+                    area.getCapacity(),
+                    bookedCountForArea,
+                    areaPrice,
+                    seatDtosForArea
+            );
+        }).toList();
 
         String hallName = event.getHall() != null ? event.getHall().getName() : "Ukendt Hal";
-        // En fallback, hvis hallName stadig er tom (selvom event altid bør have en hall)
         if (hallName.isEmpty() && !areaMapDtos.isEmpty()) {
             hallName = areaMapDtos.get(0).getAreaName();
         }

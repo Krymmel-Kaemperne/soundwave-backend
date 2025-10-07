@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface AreaRepository extends JpaRepository<Area, Long> {
     List<Area> findByHall_HallId(Long hallId);
-
 }
+
