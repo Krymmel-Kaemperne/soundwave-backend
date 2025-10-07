@@ -34,6 +34,11 @@ public class EventController {
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
     }
+    
+    @GetMapping("/visible")
+    public List<Event> getVisibleEvents() {
+        return eventRepository.findByIsVisibleTrue();
+    }
     @GetMapping("/{id}")
     public Event getEventById(@PathVariable Long id) {
         return eventRepository.findById(id).orElseThrow();

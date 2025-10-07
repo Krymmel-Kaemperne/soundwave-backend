@@ -57,6 +57,7 @@ public class InitData implements CommandLineRunner {
                 LocalDateTime.of(2025, 11, 1, 20, 0), hall1
         );
         rockConcert.setImageUrl("/images/Red-Hot-Chili-Peppers-Tour.webp");
+        rockConcert.setIsVisible(true);
 
         Event jazzNight = new Event(
                 "Jazz Night: Armstrong's Resurrection",
@@ -65,6 +66,7 @@ public class InitData implements CommandLineRunner {
                 LocalDateTime.of(2025, 11, 5, 19, 30), hall1
         );
         jazzNight.setImageUrl("/images/LouisArmstrong.webp");
+        jazzNight.setIsVisible(true);
 
         Event comedyShow = new Event(
                 "Rowan Atkinson: Mr. Bean vender tilbage!",
@@ -75,6 +77,7 @@ public class InitData implements CommandLineRunner {
                 hall2
         );
         comedyShow.setImageUrl("/images/RowanAtkinson.webp");
+        comedyShow.setIsVisible(true);
 
         Event indieBand = new Event(
                 "Radiohead: En intim aften",
@@ -85,6 +88,7 @@ public class InitData implements CommandLineRunner {
                 hall2
         );
         indieBand.setImageUrl("/images/RadioHead.webp");
+        indieBand.setIsVisible(true);
 
         eventRepository.saveAll(List.of(rockConcert, jazzNight, comedyShow, indieBand));
 

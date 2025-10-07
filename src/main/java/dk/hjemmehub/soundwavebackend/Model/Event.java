@@ -29,6 +29,9 @@ public class Event {
 
     private String imageUrl;
 
+    @Column(name = "is_visible", columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean isVisible = true;
+
     @ManyToOne
     @JoinColumn(name = "hall_id", referencedColumnName = "hall_id")
     private Hall hall;
@@ -42,6 +45,7 @@ public class Event {
         this.status = status;
         this.eventDate = eventDate;
         this.hall = hall;
+        this.isVisible = true;
     }
 
     public Long getEventId() {
@@ -106,6 +110,14 @@ public class Event {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Boolean getIsVisible() {
+        return isVisible;
+    }
+
+    public void setIsVisible(Boolean isVisible) {
+        this.isVisible = isVisible;
     }
 
 }
