@@ -18,7 +18,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Sæt Java 21 op og cache Maven dependencies (automatisk cache)
+      # Sæt Java 21 op og cache Maven dependencies
       - name: Sæt JDK 21 op
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0
         with:
@@ -26,9 +26,9 @@ jobs:
           java-version: 21
           cache: maven
 
-      # (Valgfrit) Eksplicit Maven-cache – giver mere kontrol
+       # Maven-cache
       - name: Cache Maven dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
