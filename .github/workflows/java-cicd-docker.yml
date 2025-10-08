@@ -1,6 +1,7 @@
-name: Java CI
+name: Java CI + Docker Build
 
 on:
+  # Kør workflow når der pushes eller laves pull request til main
   push:
     branches: [main]
   pull_request:
@@ -11,35 +12,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0
+      # Hent koden fra GitHub
+      - name: Tjek projekt ud
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0
         with:
           persist-credentials: false
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 #v5.0
+      # Sæt Java 21 op og cache Maven dependencies
+      - name: Sæt JDK 21 op
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0
         with:
           distribution: temurin
           java-version: 21
           cache: maven
 
-      - name: Validate Maven Wrapper
+      # Sørg for at mvnw kan køres på Linux
+      - name: Gør Maven Wrapper eksekverbar
+        run: chmod +x mvnw
+
+      # Tjek at Maven Wrapper virker
+      - name: Kontroller Maven Wrapper
         run: ./mvnw -v
 
-      - name: Build with Maven
+      # Byg Java-projektet og kør tests
+      - name: Byg projekt og kør tests
         run: ./mvnw -B verify
 
-      # OPTIONAL – cache manual step (if you prefer explicit caching)
-      # uses: actions/cache@v4 instead of automatic Maven cache
-      # Uncomment if you need full control:
-      #
-      # - name: Cache Maven dependencies
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.m2/repository
-      #     key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-maven-
+      # Byg Docker image ud fra Dockerfile
+      - name: Byg Docker image
+        run: docker build -t SoundWave/backend:latest .
 
-      - name: Run tests
-        run: ./mvnw test
+      # (Valgfrit) Login og push Docker image til container registry
+      # Fjern kommentar-tegn (#) for at aktivere
+      #
+      # - name: Log ind på GitHub Container Registry
+      #   uses: docker/login-action@343f7e2d3c6c04b7edfdc972a7d7a84f7f4b4ad7 # v3.2.2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      #
+      # - name: Push Docker image
+      #   run: docker push ghcr.io/${{ github.repository_owner }}/myapp:latest

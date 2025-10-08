@@ -1,23 +1,38 @@
-# ==== Build Stage ====
-FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
+# ===========================
+# 🧱 STAGE 1: Build JAR file
+# ===========================
+FROM maven:3.9.8-eclipse-temurin-21 AS builder
 
+# Sæt arbejdsmappe
 WORKDIR /app
+#produktions profil
+ENV SPRING_PROFILES_ACTIVE=prod
 
-# Copy only pom.xml and download dependencies
-# -> Cached unless pom.xml changes
+# Først kopieres kun pom.xml (så dependencies caches)
 COPY pom.xml .
+
+# Forhent Maven dependencies – uden at bygge koden
 RUN mvn dependency:go-offline -B
 
-# Now copy source & build
-# -> This will only break the cache if src/ changes
+# Nu kopieres resten af koden
 COPY src ./src
-RUN mvn -B clean verify
 
-# ==== Runtime Stage ====
-FROM eclipse-temurin:21-jre-alpine AS runtime
+# Byg projektet uden at køre tests
+RUN mvn clean package -DskipTests
 
+# ===========================
+# 🚀 STAGE 2: Runtime Image
+# ===========================
+FROM eclipse-temurin:21-jre
+
+# Opret arbejdsmappe inde i containeren
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
 
+# Kopiér det færdige .jar fra builder-stage
+COPY --from=builder /app/target/*.jar app.jar
+
+# Eksponer port (hvis din Spring Boot app bruger fx 8080)
 EXPOSE 8080
+
+# Start applikationen
 ENTRYPOINT ["java", "-jar", "app.jar"]
