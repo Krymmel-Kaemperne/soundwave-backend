@@ -4,7 +4,7 @@ import dk.hjemmehub.soundwavebackend.DTO.SeatDto;
 import dk.hjemmehub.soundwavebackend.Model.EventSeat;
 import dk.hjemmehub.soundwavebackend.DTO.SeatReservationRequest;
 import dk.hjemmehub.soundwavebackend.Repository.EventSeatRepository;
-import org.hibernate.Session;
+// org.hibernate.Session import removed (unused after cache removal)
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import dk.hjemmehub.soundwavebackend.Model.Area;
@@ -16,10 +16,17 @@ import dk.hjemmehub.soundwavebackend.DTO.SeatMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.AreaMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.EventMapDto;
 
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.PessimisticLockException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors; // Importer Collectors
+import java.util.stream.IntStream;
 import java.util.Map; // Importer Map
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class SeatService {
@@ -56,10 +63,27 @@ public class SeatService {
                         es.getSeat().getSeatId(),
                         es.getSeat().getRowNumber(),
                         es.getSeat().getSeatNumber(),
-                        es.isReserved() ? "booked" : "free",
+                        ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())) ? "booked" : "free",
                         toRowLetter(es.getSeat().getRowNumber()) + es.getSeat().getSeatNumber()
                 ))
                 .toList();
+    }
+
+    // Paginated version for large datasets
+    public Page<SeatDto> getSeatsForEventPaginated(Long eventId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EventSeat> eventSeatsPage = eventSeatRepository.findByEvent_EventId(eventId, pageable);
+        
+        return eventSeatsPage.map(es -> {
+            if (es.getSeat() == null) return null; // Skip null seats
+            return new SeatDto(
+                    es.getSeat().getSeatId(),
+                    es.getSeat().getRowNumber(),
+                    es.getSeat().getSeatNumber(),
+                    ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())) ? "booked" : "free",
+                    toRowLetter(es.getSeat().getRowNumber()) + es.getSeat().getSeatNumber()
+            );
+        });
     }
 
     @Transactional
@@ -69,14 +93,13 @@ public class SeatService {
             throw new IllegalArgumentException("Seat not part of event");
         }
         EventSeat es = matches.get(0);
-        if (es.isReserved()) {
+        if ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())) {
             throw new IllegalStateException("Seat already reserved");
         }
-        es.setReserved(true);
+        es.setStatus("BOOKED");
         eventSeatRepository.save(es);
     }
 
-    @Transactional
     public void reserveSeatsBulk(Long eventId, SeatReservationRequest request) {
         List<Long> seatIds = request.getSeatIds();
         var seats = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdIn(eventId, seatIds);
@@ -86,10 +109,10 @@ public class SeatService {
         }
 
         for (EventSeat es : seats) {
-            if (es.isReserved()) {
+            if ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())) {
                 throw new IllegalStateException("One or more seats already reserved");
             }
-            es.setReserved(true);
+            es.setStatus("BOOKED");
         }
         eventSeatRepository.saveAll(seats);
     }
@@ -103,7 +126,7 @@ public class SeatService {
         List<Area> areas = areaRepository.findByHall_HallId(event.getHall().getHallId());
 
         for (Area area : areas) {
-            if (area.getType().equals("seating")) {
+            if ("seating".equals(area.getType())) {
                 // Check if seats already exist for this area
                 if (!seatRepository.existsByArea_AreaId(area.getAreaId())) {
                     // Create seats for the area if they don't exist
@@ -114,15 +137,23 @@ public class SeatService {
 
                 // Create EventSeat records linking this event to all seats in the area
                 List<Seat> seats = seatRepository.findByArea_AreaId(area.getAreaId());
+                
+                // Batch process EventSeat creation for better performance
+                List<EventSeat> eventSeatsToCreate = new ArrayList<>();
                 for (Seat seat : seats) {
                     // Check if EventSeat already exists
                     if (!eventSeatRepository.existsByEvent_EventIdAndSeat_SeatId(eventId, seat.getSeatId())) {
                         EventSeat eventSeat = new EventSeat();
                         eventSeat.setEvent(event);
                         eventSeat.setSeat(seat);
-                        eventSeat.setReserved(false);
-                        eventSeatRepository.save(eventSeat);
+                        eventSeat.setStatus("FREE");
+                        eventSeatsToCreate.add(eventSeat);
                     }
+                }
+                
+                // Save all EventSeats in one batch operation
+                if (!eventSeatsToCreate.isEmpty()) {
+                    eventSeatRepository.saveAll(eventSeatsToCreate);
                 }
             }
         }
@@ -155,16 +186,21 @@ public class SeatService {
         if (seatRepository.existsByArea_AreaId(areaId)) {
             throw new IllegalStateException("Seats already exist for this area. Use overwrite to recreate.");
         }
+        // Generate seats using streams for clarity and maintainability
+        List<Seat> seatsToCreate = IntStream.rangeClosed(1, rows)
+                .boxed()
+                .flatMap(r -> IntStream.rangeClosed(1, cols)
+                        .mapToObj(c -> {
+                            Seat seat = new Seat();
+                            seat.setRowNumber(r);
+                            seat.setSeatNumber(c);
+                            seat.setArea(area);
+                            return seat;
+                        }))
+                .collect(Collectors.toList());
 
-        for (int r = 1; r <= rows; r++) {
-            for (int c = 1; c <= cols; c++) {
-                Seat seat = new Seat();
-                seat.setRowNumber(r);
-                seat.setSeatNumber(c);
-                seat.setArea(area);
-                seatRepository.save(seat);
-            }
-        }
+        // Save all seats in one batch operation
+        seatRepository.saveAll(seatsToCreate);
     }
 
 
@@ -179,37 +215,47 @@ public class SeatService {
 
     public EventMapDto buildEventMap(Long eventId) {
         var event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event not found"));
+        // Use optimized query with JOIN FETCH to avoid N+1 problem
         List<EventSeat> allEventSeats = eventSeatRepository.findByEvent_EventId(eventId);
         String clientSessionId = sessionService.generateUniqueSessionId();
 
-        // RETTELSE 1: Gruppér efter areaId (Long), ikke Area-objektet
-        Map<Long, List<EventSeat>> seatingSeatsByAreaId = allEventSeats.stream()
+        // Create parallel stream for better performance with large datasets
+        Map<Long, List<EventSeat>> seatingSeatsByAreaId = allEventSeats.parallelStream()
                 .filter(es -> es.getSeat() != null && es.getSeat().getArea() != null)
-                .collect(Collectors.groupingBy(es -> es.getSeat().getArea().getAreaId()));
+                .collect(Collectors.groupingByConcurrent(es -> es.getSeat().getArea().getAreaId()));
+
+        // Pre-compute standing event seats to avoid repeated filtering
+        List<EventSeat> standingEventSeats = allEventSeats.parallelStream()
+                .filter(es -> es.getSeat() == null)
+                .collect(Collectors.toList());
 
         List<Area> allAreasInHall = areaRepository.findByHall_HallId(event.getHall().getHallId());
 
-        var areaMapDtos = allAreasInHall.stream().map(area -> {
+        // Use parallel stream for area processing
+        var areaMapDtos = allAreasInHall.parallelStream().map(area -> {
             int bookedCountForArea;
             Double priceForArea = event.getBasePrice() != null ? event.getBasePrice().doubleValue() : 0.0;
             List<SeatMapDto> seatDtosForArea;
 
-            if (area.getType().equals("standing")) {
-                bookedCountForArea = (int) allEventSeats.stream()
-                        .filter(es -> es.getEvent().equals(event) && es.getSeat() == null && ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())))
+            if ("standing".equals(area.getType())) {
+                // Use pre-filtered standing seats
+                bookedCountForArea = (int) standingEventSeats.stream()
+                        .filter(es -> ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())))
                         .count();
                 seatDtosForArea = List.of();
             } else { // Seating area
-                // RETTELSE 2: Slå op på area.getAreaId()
+                // Use pre-grouped seats by area
                 List<EventSeat> seatingEventSeats = seatingSeatsByAreaId.getOrDefault(area.getAreaId(), List.of());
+                
+                // Pre-compute booked count to avoid repeated iteration
                 bookedCountForArea = (int) seatingEventSeats.stream()
                         .filter(es -> "BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus()))
                         .count();
 
-                seatDtosForArea = seatingEventSeats.stream()
+                // Optimize seat mapping with parallel stream
+                seatDtosForArea = seatingEventSeats.parallelStream()
                         .filter(es -> es.getSeat() != null)
                         .map(es -> {
-                            // ... resten af din map-logik er fin ...
                             Seat s = es.getSeat();
                             String status;
                             if ("BOOKED".equals(es.getStatus())) {
@@ -246,38 +292,44 @@ public class SeatService {
             throw new IllegalArgumentException("Ingen sæder angivet for reservation.");
         }
 
-        // Opret eller genbrug session ID. Hvis kunden sender et eksisterende ID, bruger vi det.
-        // Ellers genererer vi et nyt. Dette er vigtigt for at kunden kan se sine egne holds.
-        String currentSessionId = (incomingSessionId != null && !incomingSessionId.isEmpty()) ? incomingSessionId : sessionService.generateUniqueSessionId();
+        try {
+            // Opret eller genbrug session ID. Hvis kunden sender et eksisterende ID, bruger vi det.
+            // Ellers genererer vi et nyt. Dette er vigtigt for at kunden kan se sine egne holds.
+            String currentSessionId = (incomingSessionId != null && !incomingSessionId.isEmpty()) ? incomingSessionId : sessionService.generateUniqueSessionId();
 
-        // Før vi holder nye sæder, frigør vi alle sæder, som denne session ID allerede holder
-        // for dette event. Dette forhindrer en kunde i at holde for mange sæder på tværs af forsøg.
-        releaseSeatsBySessionId(eventId, currentSessionId);
+            // Før vi holder nye sæder, frigør vi alle sæder, som denne session ID allerede holder
+            // for dette event. Dette forhindrer en kunde i at holde for mange sæder på tværs af forsøg.
+            releaseSeatsBySessionId(eventId, currentSessionId);
 
-        List<EventSeat> eventSeatsToHold = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdIn(eventId, seatIds);
+            // Use pessimistic locking to prevent race conditions
+            List<EventSeat> eventSeatsToHold = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdInWithLock(eventId, seatIds);
 
-        if (eventSeatsToHold.size() != seatIds.size()) {
-            throw new IllegalArgumentException("Et eller flere af de valgte sæder er ikke del af eventet eller eksisterer ikke.");
-        }
-
-        LocalDateTime heldUntil = LocalDateTime.now().plusMinutes(5); // Hold sæder i 5 minutter
-
-        for (EventSeat es : eventSeatsToHold) {
-            // Tjekker om sædet allerede er permanent booket
-            if ("BOOKED".equals(es.getStatus())) {
-                throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er allerede permanent booket.");
-            }
-            // Tjekker om sædet allerede er holdt af en *anden* session og holdet ikke er udløbet
-            if ("HELD".equals(es.getStatus()) && !currentSessionId.equals(es.getSessionId()) && heldUntil.isBefore(es.getHeldUntil())) {
-                throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er midlertidigt holdt af en anden kunde.");
+            if (eventSeatsToHold.size() != seatIds.size()) {
+                throw new IllegalArgumentException("Et eller flere af de valgte sæder er ikke del af eventet eller eksisterer ikke.");
             }
 
-            es.setStatus("HELD");
-            es.setHeldUntil(heldUntil);
-            es.setSessionId(currentSessionId); // Gem den session, der holder sædet
+            LocalDateTime heldUntil = LocalDateTime.now().plusMinutes(5); // Hold sæder i 5 minutter
+
+            for (EventSeat es : eventSeatsToHold) {
+                // Tjekker om sædet allerede er permanent booket
+                if ("BOOKED".equals(es.getStatus())) {
+                    throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er allerede permanent booket.");
+                }
+                // Tjekker om sædet allerede er holdt af en *anden* session og holdet ikke er udløbet
+                if ("HELD".equals(es.getStatus()) && !currentSessionId.equals(es.getSessionId()) && heldUntil.isBefore(es.getHeldUntil())) {
+                    throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er midlertidigt holdt af en anden kunde.");
+                }
+
+                es.setStatus("HELD");
+                es.setHeldUntil(heldUntil);
+                es.setSessionId(currentSessionId); // Gem den session, der holder sædet
+            }
+            eventSeatRepository.saveAll(eventSeatsToHold);
+            return currentSessionId; // Returner den session ID, der nu holder sæderne
+        } catch (LockTimeoutException | PessimisticLockException e) {
+            // Handle lock acquisition failures
+            throw new IllegalStateException("Kunne ikke reservere sæderne. Prøv venligst igen. Sæderne kan blive behandlet af en anden bruger.", e);
         }
-        eventSeatRepository.saveAll(eventSeatsToHold);
-        return currentSessionId; // Returner den session ID, der nu holder sæderne
     }
 
     // NY METODE: Frigiver sæder holdt af en specifik session

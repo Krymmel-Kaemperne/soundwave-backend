@@ -1,13 +1,17 @@
 package dk.hjemmehub.soundwavebackend.Model;
 
-import dk.hjemmehub.soundwavebackend.Model.Hall;
-import dk.hjemmehub.soundwavebackend.Model.Seat;
 import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
-@Table(name = "Area")
+@Table(name = "Area",
+       indexes = {
+           @Index(name = "idx_area_hall_id", columnList = "hall_id"),
+           @Index(name = "idx_area_type", columnList = "type"),
+           @Index(name = "idx_area_hall_type", columnList = "hall_id, type")
+       })
+// Hibernate second-level cache annotation removed when caching disabled
 public class Area {
 
     @Id

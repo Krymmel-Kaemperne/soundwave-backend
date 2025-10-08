@@ -5,7 +5,15 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Event_Seat")
+@Table(name = "Event_Seat",
+       indexes = {
+           @Index(name = "idx_event_seat_event_id", columnList = "event_id"),
+           @Index(name = "idx_event_seat_seat_id", columnList = "seat_id"),
+           @Index(name = "idx_event_seat_status", columnList = "status"),
+           @Index(name = "idx_event_seat_event_status", columnList = "event_id, status"),
+           @Index(name = "idx_event_seat_session_id", columnList = "session_id")
+       })
+// Hibernate second-level cache annotation removed when caching disabled
 public class EventSeat {
 
     @Id
@@ -19,8 +27,6 @@ public class EventSeat {
     @ManyToOne
     @JoinColumn(name = "seat_id")
     private Seat seat;
-
-    private boolean isReserved;
 
     @Column(name="status")
     private String status;
@@ -81,7 +87,12 @@ public class EventSeat {
     }
 
     public void setReserved(boolean reserved) {
-        isReserved = reserved;
+        // Update status based on the boolean value
+        if (reserved) {
+            this.status = "BOOKED";
+        } else {
+            this.status = "FREE";
+        }
     }
 
     public boolean isReserved() {

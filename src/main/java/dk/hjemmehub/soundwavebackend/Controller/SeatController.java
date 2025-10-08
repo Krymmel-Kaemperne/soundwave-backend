@@ -4,11 +4,13 @@ import dk.hjemmehub.soundwavebackend.DTO.SeatHoldRequestDTO;
 import dk.hjemmehub.soundwavebackend.DTO.SeatReservationRequest;
 import dk.hjemmehub.soundwavebackend.Service.SeatService;
 import dk.hjemmehub.soundwavebackend.Service.SessionService;
+import dk.hjemmehub.soundwavebackend.DTO.SeatDto;
+import dk.hjemmehub.soundwavebackend.DTO.EventMapDto;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import dk.hjemmehub.soundwavebackend.DTO.EventMapDto;
 
 @RestController
 @RequestMapping("/events/{eventId}/seats")
@@ -39,6 +41,15 @@ public class SeatController {
     public ResponseEntity<EventMapDto> getEventMap(@PathVariable Long eventId) {
         EventMapDto map = seatService.buildEventMap(eventId);
         return ResponseEntity.ok(map);
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<Page<SeatDto>> getSeatsForEventPaginated(
+            @PathVariable Long eventId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        Page<SeatDto> seats = seatService.getSeatsForEventPaginated(eventId, page, size);
+        return ResponseEntity.ok(seats);
     }
 
     @PostMapping("/generate-seats")
