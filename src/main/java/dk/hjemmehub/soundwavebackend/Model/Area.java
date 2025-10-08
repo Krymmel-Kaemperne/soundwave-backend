@@ -24,7 +24,7 @@ public class Area {
     private Hall hall;
 
     // hvis area er seating → seats
-    @OneToMany(mappedBy = "area")
+    @OneToMany(mappedBy = "area", fetch = FetchType.EAGER)
     private List<Seat> seats;
 
     // getters/setters

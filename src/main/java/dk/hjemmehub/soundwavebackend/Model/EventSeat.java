@@ -2,6 +2,8 @@ package dk.hjemmehub.soundwavebackend.Model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "Event_Seat")
 public class EventSeat {
@@ -19,6 +21,39 @@ public class EventSeat {
     private Seat seat;
 
     private boolean isReserved;
+
+    @Column(name="status")
+    private String status;
+
+    @Column(name="held_until")
+    private LocalDateTime heldUntil;
+
+    @Column(name="session_id")
+    private String sessionId;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getHeldUntil() {
+        return heldUntil;
+    }
+
+    public void setHeldUntil(LocalDateTime heldUntil) {
+        this.heldUntil = heldUntil;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
 
     // getters and setters
     public Long getEventSeatId() {
@@ -45,11 +80,11 @@ public class EventSeat {
         this.seat = seat;
     }
 
-    public boolean isReserved() {
-        return isReserved;
-    }
-
     public void setReserved(boolean reserved) {
         isReserved = reserved;
+    }
+
+    public boolean isReserved() {
+        return "BOOKED".equals(this.status) || "HELD".equals(this.status);
     }
 }

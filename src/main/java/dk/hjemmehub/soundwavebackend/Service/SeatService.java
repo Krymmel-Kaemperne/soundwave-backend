@@ -4,6 +4,7 @@ import dk.hjemmehub.soundwavebackend.DTO.SeatDto;
 import dk.hjemmehub.soundwavebackend.Model.EventSeat;
 import dk.hjemmehub.soundwavebackend.DTO.SeatReservationRequest;
 import dk.hjemmehub.soundwavebackend.Repository.EventSeatRepository;
+import org.hibernate.Session;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import dk.hjemmehub.soundwavebackend.Model.Area;
@@ -15,6 +16,7 @@ import dk.hjemmehub.soundwavebackend.DTO.SeatMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.AreaMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.EventMapDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors; // Importer Collectors
 import java.util.Map; // Importer Map
@@ -26,12 +28,14 @@ public class SeatService {
     private final SeatRepository seatRepository;
     private final AreaRepository areaRepository;
     private final EventRepository eventRepository;
+    private final SessionService sessionService;
 
-    public SeatService(EventSeatRepository eventSeatRepository, SeatRepository seatRepository, AreaRepository areaRepository, EventRepository eventRepository) {
+    public SeatService(EventSeatRepository eventSeatRepository, SeatRepository seatRepository, AreaRepository areaRepository, EventRepository eventRepository, SessionService sessionService) {
         this.eventSeatRepository = eventSeatRepository;
         this.seatRepository = seatRepository;
         this.areaRepository = areaRepository;
         this.eventRepository = eventRepository;
+        this.sessionService = sessionService;
     }
 
     // CONVERTERE NUMBER TIL STRING (hjælpemetode til sædelabels)
@@ -125,16 +129,19 @@ public class SeatService {
     }
 
     private int getRowCountForArea(String areaName) {
-        if (areaName.contains("Bag")) return 6;  // Back area has 6 rows
-        return 2;  // Left and right areas have 2 rows
+        if (areaName.contains("Bag")) return 6;
+        // NYT: Logic for Conference Hall
+        if (areaName.contains("Conference Hall - Main Seating")) return 50; // 50 rækker
+        return 2;
     }
 
     private int getSeatsPerRowForArea(String areaName) {
-        if (areaName.contains("Bag")) return 15;  // Back area has 15 seats per row
-        return 10;  // Left and right areas have 10 seats per row
+        if (areaName.contains("Bag")) return 15;
+        // NYT: Logic for Conference Hall
+        if (areaName.contains("Conference Hall - Main Seating")) return 30; // 30 sæder
+        return 10;
     }
 
-    // Hjælper til labels A1, B3 osv. - Denne metode er ikke brugt her, men du har den.
     private String toRowLabel(int rowNumber, int seatNumber) {
         return toRowLetter(rowNumber) + String.valueOf(seatNumber);
     }
@@ -168,80 +175,60 @@ public class SeatService {
         return n.contains("balcony") || n.contains("balkon");
     }
 
+    // I SeatService.java -> buildEventMap()
+
     public EventMapDto buildEventMap(Long eventId) {
-        var event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
-
+        var event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event not found"));
         List<EventSeat> allEventSeats = eventSeatRepository.findByEvent_EventId(eventId);
+        String clientSessionId = sessionService.generateUniqueSessionId();
 
-        // Group actual seating EventSeats by their Area for easier processing
-        Map<Area, List<EventSeat>> seatingSeatsByArea = allEventSeats.stream()
+        // RETTELSE 1: Gruppér efter areaId (Long), ikke Area-objektet
+        Map<Long, List<EventSeat>> seatingSeatsByAreaId = allEventSeats.stream()
                 .filter(es -> es.getSeat() != null && es.getSeat().getArea() != null)
-                .collect(Collectors.groupingBy(es -> es.getSeat().getArea()));
+                .collect(Collectors.groupingBy(es -> es.getSeat().getArea().getAreaId()));
 
-        // Get all areas associated with the event's hall, including standing areas
-        List<Area> allAreasInHall =
-                areaRepository.findByHall_HallId(event.getHall().getHallId());
+        List<Area> allAreasInHall = areaRepository.findByHall_HallId(event.getHall().getHallId());
 
         var areaMapDtos = allAreasInHall.stream().map(area -> {
             int bookedCountForArea;
-
-            Double priceForArea = event.getBasePrice() != null
-                    ? event.getBasePrice().doubleValue()
-                    : 0.0;
-
-            if ("seating".equals(area.getType()) && isBalcony(area.getName())) {
-                priceForArea += 200.0;
-            }
-
-            final double areaPrice = priceForArea;
-
+            Double priceForArea = event.getBasePrice() != null ? event.getBasePrice().doubleValue() : 0.0;
             List<SeatMapDto> seatDtosForArea;
 
-            if ("standing".equals(area.getType())) {
-                // Count standing reservations (EventSeats with seat == null)
+            if (area.getType().equals("standing")) {
                 bookedCountForArea = (int) allEventSeats.stream()
-                        .filter(es -> es.getSeat() == null && es.isReserved())
+                        .filter(es -> es.getEvent().equals(event) && es.getSeat() == null && ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())))
                         .count();
-
-                seatDtosForArea = List.of(); // no individual seats
-            } else {
-                List<EventSeat> seatingEventSeats =
-                        seatingSeatsByArea.getOrDefault(area, List.of());
-                bookedCountForArea =
-                        (int) seatingEventSeats.stream().filter(EventSeat::isReserved).count();
+                seatDtosForArea = List.of();
+            } else { // Seating area
+                // RETTELSE 2: Slå op på area.getAreaId()
+                List<EventSeat> seatingEventSeats = seatingSeatsByAreaId.getOrDefault(area.getAreaId(), List.of());
+                bookedCountForArea = (int) seatingEventSeats.stream()
+                        .filter(es -> "BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus()))
+                        .count();
 
                 seatDtosForArea = seatingEventSeats.stream()
                         .filter(es -> es.getSeat() != null)
                         .map(es -> {
+                            // ... resten af din map-logik er fin ...
                             Seat s = es.getSeat();
-                            String status = es.isReserved() ? "booked" : "free";
+                            String status;
+                            if ("BOOKED".equals(es.getStatus())) {
+                                status = "booked";
+                            } else if ("HELD".equals(es.getStatus()) && clientSessionId.equals(es.getSessionId())) {
+                                status = "held_by_me";
+                            } else if ("HELD".equals(es.getStatus())) {
+                                status = "held_by_other";
+                            } else {
+                                status = "free";
+                            }
                             String label = toRowLetter(s.getRowNumber()) + s.getSeatNumber();
-                            return new SeatMapDto(
-                                    s.getSeatId(),
-                                    s.getRowNumber(),
-                                    s.getSeatNumber(),
-                                    status,
-                                    label,
-                                    area.getAreaId(),
-                                    areaPrice // use the final copy
-                            );
+                            return new SeatMapDto(s.getSeatId(), s.getRowNumber(), s.getSeatNumber(), status, label, area.getAreaId(), priceForArea);
                         })
-                        .sorted(java.util.Comparator
-                                .comparingInt(SeatMapDto::getRowNumber)
-                                .thenComparingInt(SeatMapDto::getSeatNumber))
+                        .sorted(java.util.Comparator.comparingInt(SeatMapDto::getRowNumber).thenComparingInt(SeatMapDto::getSeatNumber))
                         .toList();
             }
 
-            return new AreaMapDto(
-                    area.getAreaId(),
-                    area.getName(),
-                    area.getType(),
-                    area.getCapacity(),
-                    bookedCountForArea,
-                    areaPrice,
-                    seatDtosForArea
-            );
+            return new AreaMapDto(area.getAreaId(), area.getName(), area.getType(), area.getCapacity(), bookedCountForArea, priceForArea, seatDtosForArea);
         }).toList();
 
         String hallName = event.getHall() != null ? event.getHall().getName() : "Ukendt Hal";
@@ -250,5 +237,60 @@ public class SeatService {
         }
 
         return new EventMapDto(event.getEventId(), event.getTitle(), hallName, areaMapDtos, event.getIsVisible());
+    }
+
+    // Holder sæde midlertidigt
+    @Transactional
+    public String holdSeats(Long eventId, List<Long> seatIds, String incomingSessionId) {
+        if (seatIds == null || seatIds.isEmpty()) {
+            throw new IllegalArgumentException("Ingen sæder angivet for reservation.");
+        }
+
+        // Opret eller genbrug session ID. Hvis kunden sender et eksisterende ID, bruger vi det.
+        // Ellers genererer vi et nyt. Dette er vigtigt for at kunden kan se sine egne holds.
+        String currentSessionId = (incomingSessionId != null && !incomingSessionId.isEmpty()) ? incomingSessionId : sessionService.generateUniqueSessionId();
+
+        // Før vi holder nye sæder, frigør vi alle sæder, som denne session ID allerede holder
+        // for dette event. Dette forhindrer en kunde i at holde for mange sæder på tværs af forsøg.
+        releaseSeatsBySessionId(eventId, currentSessionId);
+
+        List<EventSeat> eventSeatsToHold = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdIn(eventId, seatIds);
+
+        if (eventSeatsToHold.size() != seatIds.size()) {
+            throw new IllegalArgumentException("Et eller flere af de valgte sæder er ikke del af eventet eller eksisterer ikke.");
+        }
+
+        LocalDateTime heldUntil = LocalDateTime.now().plusMinutes(5); // Hold sæder i 5 minutter
+
+        for (EventSeat es : eventSeatsToHold) {
+            // Tjekker om sædet allerede er permanent booket
+            if ("BOOKED".equals(es.getStatus())) {
+                throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er allerede permanent booket.");
+            }
+            // Tjekker om sædet allerede er holdt af en *anden* session og holdet ikke er udløbet
+            if ("HELD".equals(es.getStatus()) && !currentSessionId.equals(es.getSessionId()) && heldUntil.isBefore(es.getHeldUntil())) {
+                throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er midlertidigt holdt af en anden kunde.");
+            }
+
+            es.setStatus("HELD");
+            es.setHeldUntil(heldUntil);
+            es.setSessionId(currentSessionId); // Gem den session, der holder sædet
+        }
+        eventSeatRepository.saveAll(eventSeatsToHold);
+        return currentSessionId; // Returner den session ID, der nu holder sæderne
+    }
+
+    // NY METODE: Frigiver sæder holdt af en specifik session
+    @Transactional
+    public void releaseSeatsBySessionId(Long eventId, String sessionId) {
+        if (sessionId == null || sessionId.isEmpty()) return; // Sikkerhedscheck
+
+        List<EventSeat> heldSeats = eventSeatRepository.findByEvent_EventIdAndStatusAndSessionId(eventId, "HELD", sessionId);
+        for (EventSeat es : heldSeats) {
+            es.setStatus("FREE");
+            es.setHeldUntil(null);
+            es.setSessionId(null);
+        }
+        eventSeatRepository.saveAll(heldSeats);
     }
 }
