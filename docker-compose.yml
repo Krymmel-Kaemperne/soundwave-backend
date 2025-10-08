@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: soundwave-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: soundwave
+      MYSQL_USER: sounduser
+      MYSQL_PASSWORD: soundpass
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - soundwave-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    image: soundwave/backend:latest
+    container_name: soundwave-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/soundwave?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: sounduser
+      SPRING_DATASOURCE_PASSWORD: soundpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      #SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    networks:
+      - soundwave-net
+
+volumes:
+  mysql_data:
+
+# 👇 this part was missing
+networks:
+  soundwave-net:
