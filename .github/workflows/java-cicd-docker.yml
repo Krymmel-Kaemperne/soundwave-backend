@@ -40,7 +40,7 @@ jobs:
 
       # Byg Docker image ud fra Dockerfile
       - name: Byg Docker image
-        run: docker build -t SoundWave/backend:latest .
+        run: docker build --cache-from=type=gha --cache-to=type=gha,mode=max -t SoundWave/backend:latest .
 
       # (Valgfrit) Login og push Docker image til container registry
       # Fjern kommentar-tegn (#) for at aktivere
