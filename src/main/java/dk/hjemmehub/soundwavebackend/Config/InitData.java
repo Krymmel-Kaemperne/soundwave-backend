@@ -45,8 +45,8 @@ public class InitData implements CommandLineRunner {
         System.out.println("Initialiserer database med data...");
 
         // 1. Opret Sale (Halls)
-        Hall hall1 = new Hall(null, "The Main Arena", 5000, "City Center");
-        Hall hall2 = new Hall(null, "Small Club Stage", 500, "Downtown");
+        Hall hall1 = new Hall(null, "Koncert Arena", 5000, "City Center");
+        Hall hall2 = new Hall(null, "Konference Sal", 500, "City Center");
         hallRepository.saveAll(List.of(hall1, hall2));
 
         // 2. Opret Events
