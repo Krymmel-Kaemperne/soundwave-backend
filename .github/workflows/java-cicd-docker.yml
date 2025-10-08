@@ -1,0 +1,56 @@
+name: Java CI + Docker Build
+
+on:
+  # Kør workflow når der pushes eller laves pull request til main
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Hent koden fra GitHub
+      - name: Tjek projekt ud
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0
+        with:
+          persist-credentials: false
+
+      # Sæt Java 21 op og cache Maven dependencies automatisk
+      - name: Sæt JDK 21 op
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      # Sørg for at mvnw kan køres på Linux
+      - name: Gør Maven Wrapper eksekverbar
+        run: chmod +x mvnw
+
+      # Tjek at Maven Wrapper virker
+      - name: Kontroller Maven Wrapper
+        run: ./mvnw -v
+
+      # Byg Java-projektet og kør tests
+      - name: Byg projekt og kør tests
+        run: ./mvnw -B verify
+
+      # Byg Docker image ud fra Dockerfile (med lag-cache)
+      - name: Byg Docker image
+        run: docker build --cache-from=type=gha --cache-to=type=gha,mode=max -t soundwave/backend:latest .
+
+      # (Valgfrit) Login og push Docker image til container registry
+      # Fjern kommentar-tegn (#) for at aktivere
+      #
+      # - name: Log ind på GitHub Container Registry
+      #   uses: docker/login-action@343f7e2d3c6c04b7edfdc972a7d7a84f7f4b4ad7 # v3.2.2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      #
+      # - name: Push Docker image
+      #   run: docker push ghcr.io/${{ github.repository_owner }}/backend:latest
