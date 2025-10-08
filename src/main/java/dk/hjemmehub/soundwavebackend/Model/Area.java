@@ -32,7 +32,7 @@ public class Area {
         return areaId;
     }
 
-    public void setId(Long areaId) {
+    public void setAreaId(Long areaId) {
         this.areaId = areaId;
     }
 
