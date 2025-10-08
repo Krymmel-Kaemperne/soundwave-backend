@@ -18,13 +18,22 @@ jobs:
         with:
           persist-credentials: false
 
-      # Sæt Java 21 op og cache Maven dependencies
+      # Sæt Java 21 op og cache Maven dependencies (automatisk cache)
       - name: Sæt JDK 21 op
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0
         with:
           distribution: temurin
           java-version: 21
           cache: maven
+
+      # (Valgfrit) Eksplicit Maven-cache – giver mere kontrol
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       # Sørg for at mvnw kan køres på Linux
       - name: Gør Maven Wrapper eksekverbar
@@ -53,4 +62,4 @@ jobs:
       #     password: ${{ secrets.GITHUB_TOKEN }}
       #
       # - name: Push Docker image
-      #   run: docker push ghcr.io/${{ github.repository_owner }}/myapp:latest
+      #   run: docker push ghcr.io/${{ github.repository_owner }}/backend:latest
