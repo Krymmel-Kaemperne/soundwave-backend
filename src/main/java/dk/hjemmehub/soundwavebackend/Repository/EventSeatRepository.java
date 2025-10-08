@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import jakarta.persistence.LockModeType;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EventSeatRepository extends JpaRepository<EventSeat, Long> {
@@ -34,4 +36,7 @@ public interface EventSeatRepository extends JpaRepository<EventSeat, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT es FROM EventSeat es JOIN FETCH es.event JOIN FETCH es.seat JOIN FETCH es.seat.area WHERE es.event.eventId = :eventId AND es.seat.seatId IN :seatIds")
     List<EventSeat> findByEvent_EventIdAndSeat_SeatIdInWithLock(Long eventId, List<Long> seatIds);
+
+    List<EventSeat> findByStatusAndHeldUntilBefore(String status, LocalDateTime heldUntil);
+
 }

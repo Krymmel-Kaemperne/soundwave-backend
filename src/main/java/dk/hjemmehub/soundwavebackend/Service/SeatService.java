@@ -316,8 +316,12 @@ public class SeatService {
                     throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er allerede permanent booket.");
                 }
                 // Tjekker om sædet allerede er holdt af en *anden* session og holdet ikke er udløbet
-                if ("HELD".equals(es.getStatus()) && !currentSessionId.equals(es.getSessionId()) && heldUntil.isBefore(es.getHeldUntil())) {
-                    throw new IllegalStateException("Sæde " + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er midlertidigt holdt af en anden kunde.");
+                if ("HELD".equals(es.getStatus())) {
+                    if(!currentSessionId.equals(es.getSessionId())) {
+                        if(es.getHeldUntil() != null && es.getHeldUntil().isAfter(LocalDateTime.now())) {
+                            throw new IllegalStateException("Sæde" + es.getSeat().getSeatNumber() + " (Række " + es.getSeat().getRowNumber() + ") er midlertidigt holdt af en anden kunde");
+                        }
+                     }
                 }
 
                 es.setStatus("HELD");
