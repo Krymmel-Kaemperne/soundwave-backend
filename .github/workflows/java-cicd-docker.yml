@@ -18,22 +18,13 @@ jobs:
         with:
           persist-credentials: false
 
-      # Sæt Java 21 op og cache Maven dependencies
+      # Sæt Java 21 op og cache Maven dependencies automatisk
       - name: Sæt JDK 21 op
         uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0
         with:
           distribution: temurin
           java-version: 21
           cache: maven
-
-       # Maven-cache
-      - name: Cache Maven dependencies
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
 
       # Sørg for at mvnw kan køres på Linux
       - name: Gør Maven Wrapper eksekverbar
@@ -47,9 +38,9 @@ jobs:
       - name: Byg projekt og kør tests
         run: ./mvnw -B verify
 
-      # Byg Docker image ud fra Dockerfile
+      # Byg Docker image ud fra Dockerfile (med lag-cache)
       - name: Byg Docker image
-        run: docker build --cache-from=type=gha --cache-to=type=gha,mode=max -t SoundWave/backend:latest .
+        run: docker build --cache-from=type=gha --cache-to=type=gha,mode=max -t soundwave/backend:latest .
 
       # (Valgfrit) Login og push Docker image til container registry
       # Fjern kommentar-tegn (#) for at aktivere
