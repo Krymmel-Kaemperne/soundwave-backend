@@ -1,13 +1,17 @@
 package dk.hjemmehub.soundwavebackend.Model;
 
-import dk.hjemmehub.soundwavebackend.Model.Hall;
-import dk.hjemmehub.soundwavebackend.Model.Seat;
 import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
-@Table(name = "Area")
+@Table(name = "Area",
+       indexes = {
+           @Index(name = "idx_area_hall_id", columnList = "hall_id"),
+           @Index(name = "idx_area_type", columnList = "type"),
+           @Index(name = "idx_area_hall_type", columnList = "hall_id, type")
+       })
+// Hibernate second-level cache annotation removed when caching disabled
 public class Area {
 
     @Id
@@ -24,7 +28,7 @@ public class Area {
     private Hall hall;
 
     // hvis area er seating → seats
-    @OneToMany(mappedBy = "area")
+    @OneToMany(mappedBy = "area", fetch = FetchType.EAGER)
     private List<Seat> seats;
 
     // getters/setters
@@ -32,7 +36,7 @@ public class Area {
         return areaId;
     }
 
-    public void setId(Long areaId) {
+    public void setAreaId(Long areaId) {
         this.areaId = areaId;
     }
 

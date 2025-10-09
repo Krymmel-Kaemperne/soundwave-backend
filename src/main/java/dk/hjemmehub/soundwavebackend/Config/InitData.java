@@ -18,13 +18,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Component
 public class InitData implements CommandLineRunner {
 
     @Autowired
     private EventRepository eventRepository;
-
     @Autowired
     private HallRepository hallRepository;
     @Autowired
@@ -37,7 +37,7 @@ public class InitData implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Kontrollerer om der allerede er data for at undgå duplikater ved hver genstart
-        if (eventRepository.count() > 0) { // Bruger eventRepository for at tjekke
+        if (eventRepository.count() > 0) {
             System.out.println("Database allerede fyldt med eventdata. Skipper initialisering.");
             return;
         }
@@ -62,7 +62,7 @@ public class InitData implements CommandLineRunner {
         Event jazzNight = new Event(
                 "Jazz Night: Armstrong's Resurrection",
                 "I et musikalsk mirakel, der vil gå over i historien, vender Louis 'Satchmo' Armstrong tilbage fra det hinsides for én aften kun! Oplev den legendariske trompet og den umiskendelige, grusede stemme, der definerede jazzen for en hel verden. Fra 'What a Wonderful World' til 'La Vie en Rose' – lad dig rive med på en magisk rejse tilbage i tiden. Dette er mere end en hyldest; det er en genopstandelse. Gå ikke glip af chancen for at opleve en sand legende.",
-                BigDecimal.valueOf(800), "Sold Out", // Rettelser til basePrice
+                BigDecimal.valueOf(800), "Sold Out",
                 LocalDateTime.of(2025, 11, 5, 19, 30), hall1
         );
         jazzNight.setImageUrl("/images/LouisArmstrong.webp");
@@ -92,11 +92,11 @@ public class InitData implements CommandLineRunner {
 
         eventRepository.saveAll(List.of(rockConcert, jazzNight, comedyShow, indieBand));
 
-        // 3. Opret Areas for Hall 1 (The Main Arena) - Disse matcher din frontend mock-data
+        // 3. Opret Areas for Hall 1 (Koncert Arena)
         Area standingFloor = new Area();
         standingFloor.setName("Gulvet (Ståpladser)");
         standingFloor.setType("standing");
-        standingFloor.setCapacity(1000); // F.eks. 1000 ståpladser
+        standingFloor.setCapacity(1000);
         standingFloor.setHall(hall1);
         areaRepository.save(standingFloor);
 
@@ -118,39 +118,90 @@ public class InitData implements CommandLineRunner {
         vipBack.setHall(hall1);
         areaRepository.save(vipBack);
 
-        // 4. Opret Sæder for Seating Areas (VipLeft, VipRight, VipBack) og tilknyt dem til Rock Concert
-        // Tilføj alle EventSeats til en samlet liste
+        // 4. Forbered liste til EventSeats
         List<EventSeat> allEventSeatsToSave = new ArrayList<>();
 
-        // VIP Balkon Venstre: 2 rækker, 10 sæder, book 2 i hver række
-        allEventSeatsToSave.addAll(createAndAssignSeats(vipLeft, 2, 10, rockConcert, 2));
+        // VIP Balkon Venstre (Koncert Arena):
+        allEventSeatsToSave.addAll(createAndAssignSeats(vipLeft, 2, 10, rockConcert, 0.3));
 
-        // VIP Balkon Højre: 2 rækker, 10 sæder, book 2 i hver række
-        allEventSeatsToSave.addAll(createAndAssignSeats(vipRight, 2, 10, rockConcert, 2));
+        // VIP Balkon Højre (Koncert Arena):
+        allEventSeatsToSave.addAll(createAndAssignSeats(vipRight, 2, 10, rockConcert, 0.3));
 
-        // VIP Balkon Bag: 6 rækker, 15 sæder, book 15 i hver række (dvs. alle)
-        allEventSeatsToSave.addAll(createAndAssignSeats(vipBack, 6, 15, rockConcert, 5));
+        // VIP Balkon Bag (Koncert Arena):
+        allEventSeatsToSave.addAll(createAndAssignSeats(vipBack, 6, 15, rockConcert, 0.4));
 
-        // 5. Opret EventSeat for Standing Area (simulerer antal bookinger)
-        // Opretter ét EventSeat, selvom det er en standing area, for at den dukker op i EventMapDto
-        EventSeat standingEventSeat = new EventSeat();
-        standingEventSeat.setEvent(rockConcert);
-        standingEventSeat.setSeat(null); // VIGTIGT: Ingen specifikt Seat-objekt for ståpladser
-        // Simulerer bookede ståpladser: 750 booket ud af 1000 capacity = 250 ledige.
-        standingEventSeat.setReserved(true); // Sætter den til 'reserved' for at den tæller med i bookedCount.
-        // Håndtering af kapacitet/bookedCount/available for standing areas sker primært i SeatService.
-        allEventSeatsToSave.add(standingEventSeat);
+        // 5. Simuler ståpladser for Koncert Arena (for rockConcert)
+        int totalStandingCapacity = standingFloor.getCapacity();
+        int bookedStandingCount = 750;
+        int availableStanding = totalStandingCapacity - bookedStandingCount;
 
-        // Gem alle EventSeats samlet
+        for (int i = 0; i < bookedStandingCount; i++) {
+            EventSeat bookedStandingSeat = new EventSeat();
+            bookedStandingSeat.setEvent(rockConcert);
+            bookedStandingSeat.setSeat(null);
+            bookedStandingSeat.setArea(standingFloor);
+            bookedStandingSeat.setStatus("BOOKED");
+            //...
+            allEventSeatsToSave.add(bookedStandingSeat);
+        }
+
+        for (int i = 0; i < availableStanding; i++) {
+            EventSeat freeStandingSeat = new EventSeat();
+            freeStandingSeat.setEvent(rockConcert);
+            freeStandingSeat.setSeat(null);
+            freeStandingSeat.setArea(standingFloor);
+            freeStandingSeat.setStatus("FREE");
+            //...
+            allEventSeatsToSave.add(freeStandingSeat);
+        }
+        System.out.println("Ståpladser for Rock Concert: " + bookedStandingCount + " bookede, " + availableStanding + " ledige");
+
+        // 6. Setup Konference Salen seating layout
+        Area conferenceMain = new Area();
+        conferenceMain.setName("Conference Hall - Main Seating");
+        conferenceMain.setType("seating");
+        conferenceMain.setHall(hall2);
+        areaRepository.save(conferenceMain);
+
+        // Create 50 rows x 30 seats for Conference Hall
+        List<Seat> conferenceSeats = new ArrayList<>();
+        for (int r = 1; r <= 50; r++) {
+            for (int c = 1; c <= 30; c++) {
+                Seat seat = new Seat();
+                seat.setRowNumber(r);
+                seat.setSeatNumber(c);
+                seat.setArea(conferenceMain);
+                conferenceSeats.add(seat);
+            }
+        }
+        seatRepository.saveAll(conferenceSeats);
+        conferenceMain.setSeats(conferenceSeats);
+
+        // Assign EventSeats to all events in Hall 2
+        List<Event> eventsInConference = List.of(comedyShow, indieBand);
+        for (Event event : eventsInConference) {
+            for (Seat seat : conferenceSeats) {
+                EventSeat es = new EventSeat();
+                es.setEvent(event);
+                es.setSeat(seat);
+                if (Math.random() < 0.25) {
+                    es.setStatus("BOOKED");
+                } else {
+                    es.setStatus("FREE");
+                }
+                es.setHeldUntil(null);
+                es.setSessionId(null);
+                allEventSeatsToSave.add(es);
+            }
+        }
+
+        // Gem ALLE EventSeats samlet, helt til sidst i run() metoden!
         eventSeatRepository.saveAll(allEventSeatsToSave);
-
-        System.out.println("Database initialisering fuldført.");
+        System.out.println("Database initialisering fuldført (alle EventSeats gemt).");
     }
 
-    // NY HJÆLPEMETODE: Returnerer listen af EventSeats
-
-
-    private List<EventSeat> createAndAssignSeats(Area area, int rows, int cols, Event event, int bookedSeatsPerRow) {
+    // Denne metode er en hjælperfunktion og skal ligge inden for InitData klassen.
+    private List<EventSeat> createAndAssignSeats(Area area, int rows, int cols, Event event, double bookingProbability) {
         List<Seat> seats = new ArrayList<>();
         List<EventSeat> eventSeats = new ArrayList<>();
 
@@ -163,22 +214,24 @@ public class InitData implements CommandLineRunner {
                 seats.add(seat);
             }
         }
-        seatRepository.saveAll(seats); // Gem alle sæder først for at få ID'er
+        seatRepository.saveAll(seats);
 
-        java.util.Random random = new java.util.Random();
-        double bookingProbability = 0.3;
+        Random random = new Random();
 
         for (Seat seat : seats) {
-            EventSeat eventSeat = new EventSeat();
-            eventSeat.setEvent(event);
-            eventSeat.setSeat(seat);
-
-            // Randomiser booking: Tilfældigt tal mellem 0.0 og 1.0. Hvis det er mindre end bookingProbability, book sædet.
-            eventSeat.setReserved(random.nextDouble() < bookingProbability);
-
-            eventSeats.add(eventSeat);
+            EventSeat es = new EventSeat();
+            es.setEvent(event);
+            es.setSeat(seat);
+            es.setArea(area); // <-- TILFØJ DENNE LINJE
+            if (random.nextDouble() < bookingProbability) {
+                es.setStatus("BOOKED");
+            } else {
+                es.setStatus("FREE");
+            }
+            es.setHeldUntil(null);
+            es.setSessionId(null);
+            eventSeats.add(es);
         }
-        // returner eventSeats her, de gemmes samlet i run()
         return eventSeats;
     }
 }

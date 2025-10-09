@@ -38,7 +38,8 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        
+        <!-- Caching dependencies removed (Spring Cache, Ehcache, JCache API, Hibernate JCache) -->
 
         <dependency>
             <groupId>com.h2database</groupId>
