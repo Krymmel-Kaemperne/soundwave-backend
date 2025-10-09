@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Event_Seat",
+@Table(name = "event_seat",
        indexes = {
            @Index(name = "idx_event_seat_event_id", columnList = "event_id"),
            @Index(name = "idx_event_seat_seat_id", columnList = "seat_id"),
@@ -27,6 +27,10 @@ public class EventSeat {
     @ManyToOne
     @JoinColumn(name = "seat_id")
     private Seat seat;
+
+    @ManyToOne
+    @JoinColumn(name = "area_id")
+    private Area area;
 
     @Column(name="status")
     private String status;
@@ -84,6 +88,14 @@ public class EventSeat {
 
     public void setSeat(Seat seat) {
         this.seat = seat;
+    }
+
+    public Area getArea() {
+        return area;
+    }
+
+    public void setArea(Area area) {
+        this.area = area;
     }
 
     public void setReserved(boolean reserved) {

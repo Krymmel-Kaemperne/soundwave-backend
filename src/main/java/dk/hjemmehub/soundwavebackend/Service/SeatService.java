@@ -236,10 +236,11 @@ public class SeatService {
             List<SeatMapDto> seatDtosForArea;
 
             if ("standing".equals(area.getType())) {
-                // Use pre-filtered standing seats
+                // Bruger præ-filtrerede ståpladser
                 bookedCountForArea = (int) standingEventSeats.stream()
+                        .filter(es -> es.getArea() != null && es.getArea().getAreaId().equals(area.getAreaId()))
                         .filter(es -> ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())))
-                        .count();
+                        .count(); // <-- Nu tæller den korrekt!
                 seatDtosForArea = List.of();
             } else { // Seating area
                 // Use pre-grouped seats by area

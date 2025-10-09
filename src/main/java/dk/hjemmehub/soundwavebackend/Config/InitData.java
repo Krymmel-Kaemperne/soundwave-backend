@@ -139,9 +139,9 @@ public class InitData implements CommandLineRunner {
             EventSeat bookedStandingSeat = new EventSeat();
             bookedStandingSeat.setEvent(rockConcert);
             bookedStandingSeat.setSeat(null);
+            bookedStandingSeat.setArea(standingFloor);
             bookedStandingSeat.setStatus("BOOKED");
-            bookedStandingSeat.setHeldUntil(null);
-            bookedStandingSeat.setSessionId(null);
+            //...
             allEventSeatsToSave.add(bookedStandingSeat);
         }
 
@@ -149,9 +149,9 @@ public class InitData implements CommandLineRunner {
             EventSeat freeStandingSeat = new EventSeat();
             freeStandingSeat.setEvent(rockConcert);
             freeStandingSeat.setSeat(null);
+            freeStandingSeat.setArea(standingFloor);
             freeStandingSeat.setStatus("FREE");
-            freeStandingSeat.setHeldUntil(null);
-            freeStandingSeat.setSessionId(null);
+            //...
             allEventSeatsToSave.add(freeStandingSeat);
         }
         System.out.println("Ståpladser for Rock Concert: " + bookedStandingCount + " bookede, " + availableStanding + " ledige");
@@ -222,6 +222,7 @@ public class InitData implements CommandLineRunner {
             EventSeat es = new EventSeat();
             es.setEvent(event);
             es.setSeat(seat);
+            es.setArea(area); // <-- TILFØJ DENNE LINJE
             if (random.nextDouble() < bookingProbability) {
                 es.setStatus("BOOKED");
             } else {

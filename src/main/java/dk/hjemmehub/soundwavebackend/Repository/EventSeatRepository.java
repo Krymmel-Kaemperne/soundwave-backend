@@ -40,4 +40,9 @@ public interface EventSeatRepository extends JpaRepository<EventSeat, Long> {
 
     List<EventSeat> findByStatusAndHeldUntilBefore(String status, LocalDateTime heldUntil);
 
+    // Metode til at finde ledige Ståpladser
+    @Query(value = "SELECT * FROM event_seat es WHERE es.event_id = :eventId AND es.area_id = :areaId AND es.seat_id IS NULL AND es.status = 'FREE' LIMIT :count", nativeQuery = true)
+    List<EventSeat> findAvailableStandingSpots(Long eventId, Long areaId, int count);
 }
+
+
