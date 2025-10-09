@@ -53,5 +53,5 @@ public class SeatServiceTest {
 
         assertEquals(BigDecimal.valueOf(200), result);
     }
-    
+
 }
