@@ -1,7 +1,6 @@
 package dk.hjemmehub.soundwavebackend.Controller;
 
 import dk.hjemmehub.soundwavebackend.DTO.SeatHoldRequestDTO;
-import dk.hjemmehub.soundwavebackend.DTO.SeatReservationRequest;
 import dk.hjemmehub.soundwavebackend.DTO.ReservationRequestDto;
 import dk.hjemmehub.soundwavebackend.Service.SeatService;
 import dk.hjemmehub.soundwavebackend.Service.SessionService;

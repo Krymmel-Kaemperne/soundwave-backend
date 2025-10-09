@@ -4,7 +4,6 @@ import dk.hjemmehub.soundwavebackend.DTO.SeatDto;
 import dk.hjemmehub.soundwavebackend.Model.EventSeat;
 import dk.hjemmehub.soundwavebackend.DTO.ReservationRequestDto;
 import dk.hjemmehub.soundwavebackend.Repository.EventSeatRepository;
-// org.hibernate.Session import removed (unused after cache removal)
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import dk.hjemmehub.soundwavebackend.Model.Area;
@@ -15,7 +14,6 @@ import dk.hjemmehub.soundwavebackend.Repository.EventRepository;
 import dk.hjemmehub.soundwavebackend.DTO.SeatMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.AreaMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.EventMapDto;
-
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.PessimisticLockException;
 import java.time.LocalDateTime;
@@ -100,8 +98,7 @@ public class SeatService {
         eventSeatRepository.save(es);
     }
 
-    public void reserveSeatsBulk(Long eventId, SeatReservationRequest request) {
-
+    public void reserveSeatsBulk(Long eventId, ReservationRequestDto request) {
         List<Long> seatIds = request.getSeatIds();
         var seats = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdIn(eventId, seatIds);
 
