@@ -50,11 +50,12 @@ public class InitData implements CommandLineRunner {
         hallRepository.saveAll(List.of(hall1, hall2));
 
         // 2. Opret Events
+        // Eksisterende Events
         Event rockConcert = new Event(
                 "Red Hot Chili Peppers",
                 "Gør dig klar til en aften med ren, uforfalsket funk-rock energi! De legendariske Red Hot Chili Peppers indtager scenen og leverer et show, der spænder over årtiers ikoniske hits. Fra de sjælfulde melodier i 'Under the Bridge' til den rå kraft i 'Give It Away' – oplev Fleas baslinjer, John Frusciantes guitar-magi og Anthony Kiedis' karismatiske vokal live. Dette er ikke bare en koncert; det er en historielektion i rock and roll.",
                 BigDecimal.valueOf(500), "Scheduled",
-                LocalDateTime.of(2025,  11, 1, 20, 0), hall1
+                LocalDateTime.of(2025, 11, 1, 20, 0), hall1
         );
         rockConcert.setImageUrl("/images/Red-Hot-Chili-Peppers-Tour.webp");
         rockConcert.setIsVisible(true);
@@ -90,7 +91,141 @@ public class InitData implements CommandLineRunner {
         indieBand.setImageUrl("/images/RadioHead.webp");
         indieBand.setIsVisible(true);
 
-        eventRepository.saveAll(List.of(rockConcert, jazzNight, comedyShow, indieBand));
+        // --- NYE EVENTS STARTER HER ---
+        Event tupacConcert = new Event(
+                "2Pac: Hologram Resurrection",
+                "En enestående chance for at opleve legenden 2Pac 'live' igen, i en banebrydende hologramkoncert fyldt med hans største hits. En aften, der vil skrive historie!",
+                BigDecimal.valueOf(750), "Scheduled",
+                LocalDateTime.of(2025, 11, 15, 20, 0), hall1
+        );
+        tupacConcert.setImageUrl("/images/2pac.webp");
+        tupacConcert.setIsVisible(true);
+
+        Event mileyCyrusConcert = new Event(
+                "Miley Cyrus: Endless Summer Vacation Live",
+                "Miley Cyrus leverer en uforglemmelig aften med hendes kraftfulde vokal og ikoniske hits fra 'Flowers' til 'Wrecking Ball'. Gør dig klar til et eksplosivt show!",
+                BigDecimal.valueOf(600), "Scheduled",
+                LocalDateTime.of(2025, 11, 18, 19, 30), hall1
+        );
+        mileyCyrusConcert.setImageUrl("/images/MileyCyrus.webp");
+        mileyCyrusConcert.setIsVisible(true);
+
+        Event ørkenensSønner = new Event(
+                "Ørkenens Sønner: Tørst",
+                "Tag med på en tør og humoristisk rejse gennem ørkenen med Ørkenens Sønner, som garanterer en aften fyldt med skøre indfald og musikalske perler.",
+                BigDecimal.valueOf(350), "Scheduled",
+                LocalDateTime.of(2025, 11, 20, 20, 0), hall2
+        );
+        ørkenensSønner.setImageUrl("/images/ØrkenensSønner.webp");
+        ørkenensSønner.setIsVisible(true);
+
+        Event stormzyConcert = new Event(
+                "Stormzy: Heavy Is The Head Tour",
+                "Den britiske grime-konge Stormzy indtager scenen med sin energiske performance og tekster, der rykker. En aften med rå kraft og uforglemmelig musik.",
+                BigDecimal.valueOf(450), "Scheduled",
+                LocalDateTime.of(2025, 11, 22, 20, 0), hall1
+        );
+        stormzyConcert.setImageUrl("/images/Stormzy.webp");
+        stormzyConcert.setIsVisible(true);
+
+        Event obamaForedrag = new Event(
+                "Barack Obama: Yes We Can! - Foredrag om Lederskab",
+                "En sjælden mulighed for at opleve den tidligere præsident Barack Obama dele sin indsigt i lederskab, forandring og fremtiden. En inspirerende aften.",
+                BigDecimal.valueOf(1200), "Scheduled",
+                LocalDateTime.of(2025, 11, 25, 19, 0), hall2
+        );
+        obamaForedrag.setImageUrl("/images/BarackObama.webp");
+        obamaForedrag.setIsVisible(true);
+
+        Event aminJensen = new Event(
+                "Amin Jensen: Hit med sangen",
+                "Amin Jensen inviterer til en aften fyldt med musikalitet, parodier og masser af latter. Gæt med på de kendte sange og syng med!",
+                BigDecimal.valueOf(280), "Scheduled",
+                LocalDateTime.of(2025, 11, 28, 20, 0), hall1
+        );
+        aminJensen.setImageUrl("/images/AminJensen.webp");
+        aminJensen.setIsVisible(true);
+
+        Event jarlTuxenForedrag = new Event(
+                "Jarl Tuxen: JPA og API foredrag",
+                "Dyk ned i den fascinerende verden af Java Persistence API og RESTful API design med Jarl Tuxen. For udviklere og tech-entusiaster.",
+                BigDecimal.valueOf(150), "Scheduled",
+                LocalDateTime.of(2025, 12, 1, 17, 0), hall2
+        );
+        jarlTuxenForedrag.setImageUrl("/images/JarlTuxen.webp"); // Placeholder
+        jarlTuxenForedrag.setIsVisible(true);
+
+        Event jaronKahalaniForedrag = new Event(
+                "Jaron Kahalani: 16 Personalities - Forstå dig selv og andre",
+                "Jaron Kahalani præsenterer en dybdegående analyse af de 16 personlighedstyper. Lær at forstå dine styrker og forbedre dine relationer.",
+                BigDecimal.valueOf(200), "Scheduled",
+                LocalDateTime.of(2025, 12, 3, 18, 0), hall2
+        );
+        jaronKahalaniForedrag.setImageUrl("/images/JaronKahalani.webp"); // Placeholder
+        jaronKahalaniForedrag.setIsVisible(true);
+
+        Event simonShineForedrag = new Event(
+                "Simon Shine: Docker on Crack - En dybdegang i containere",
+                "Simon Shine tager dig med på en intens rejse ind i Dockers verden. Lær de avancerede tricks og optimeringer i dette foredrag for den erfarne udvikler.",
+                BigDecimal.valueOf(220), "Scheduled",
+                LocalDateTime.of(2025, 12, 5, 17, 30), hall2
+        );
+        simonShineForedrag.setImageUrl("/images/SimonShine.webp"); // Placeholder
+        simonShineForedrag.setIsVisible(true);
+
+        Event popsiKrelle = new Event(
+                "Popsi og Krelle: Musikalsk Legestue",
+                "En magisk og interaktiv musikoplevelse for de yngste. Popsi og Krelle inviterer til sang, dans og leg i Koncert Arena.",
+                BigDecimal.valueOf(120), "Scheduled",
+                LocalDateTime.of(2025, 12, 8, 14, 0), hall1
+        );
+        popsiKrelle.setImageUrl("/images/PopsiOgKrelle.webp"); // Placeholder
+        popsiKrelle.setIsVisible(true);
+
+        Event rollingStones = new Event(
+                "Rolling Stones: Hackney Diamonds Tour",
+                "De legendariske Rolling Stones er tilbage! Oplev rock 'n' rollens ikoner live i Koncert Arena med hits fra deres seneste album og klassikere.",
+                BigDecimal.valueOf(950), "Scheduled",
+                LocalDateTime.of(2025, 12, 12, 20, 0), hall1
+        );
+        rollingStones.setImageUrl("/images/RollingStones.webp");
+        rollingStones.setIsVisible(true);
+
+        Event gorillazConcert = new Event(
+                "Gorillaz: The World of Gorillaz Live",
+                "Damon Albarn og hans virtuelle band Gorillaz leverer et visuelt spektakulært og musikalsk unikt show med alle deres anerkendte hits.",
+                BigDecimal.valueOf(550), "Scheduled",
+                LocalDateTime.of(2025, 12, 15, 20, 30), hall1
+        );
+        gorillazConcert.setImageUrl("/images/Gorillaz.webp");
+        gorillazConcert.setIsVisible(true);
+
+        Event frankSinatra = new Event(
+                "Frank Sinatra: En magisk aften (Hologram)",
+                "Tag på en tidsrejse til the golden age of jazz med et spektakulært hologramshow med den uforlignelige Frank Sinatra. What a wonderful night!",
+                BigDecimal.valueOf(850), "Scheduled",
+                LocalDateTime.of(2025, 12, 18, 19, 0), hall1
+        );
+        frankSinatra.setImageUrl("/images/FrankSinatra.webp"); // Placeholder
+        frankSinatra.setIsVisible(true);
+
+        Event taylorSwift = new Event(
+                "Taylor Swift: The Eras Tour - Extended",
+                "Taylor Swift bringer sin fænomenale Eras Tour til Soundwave Arena med et udvidet show. Gør dig klar til en aften med alle dine yndlingssange!",
+                BigDecimal.valueOf(1100), "Scheduled",
+                LocalDateTime.of(2025, 12, 22, 19, 0), hall1
+        );
+        taylorSwift.setImageUrl("/images/TaylorSwift.webp"); // Placeholder
+        taylorSwift.setIsVisible(true);
+
+        // Gem alle events
+        eventRepository.saveAll(List.of(
+                rockConcert, jazzNight, comedyShow, indieBand,
+                tupacConcert, mileyCyrusConcert, ørkenensSønner, stormzyConcert,
+                obamaForedrag, aminJensen, jarlTuxenForedrag, jaronKahalaniForedrag,
+                simonShineForedrag, popsiKrelle, rollingStones, gorillazConcert,
+                frankSinatra, taylorSwift
+        ));
 
         // 3. Opret Areas for Hall 1 (Koncert Arena)
         Area standingFloor = new Area();
@@ -121,40 +256,53 @@ public class InitData implements CommandLineRunner {
         // 4. Forbered liste til EventSeats
         List<EventSeat> allEventSeatsToSave = new ArrayList<>();
 
+        // --- TILFØJ ALLE EVENTS TIL STÅPLADSOMRÅDET ---
+        // Generer nu ståpladser for *alle* events i Hall 1
+        List<Event> eventsInHall1 = List.of(rockConcert, jazzNight, tupacConcert, mileyCyrusConcert,
+                stormzyConcert, aminJensen, popsiKrelle, rollingStones, gorillazConcert,
+                frankSinatra, taylorSwift);
+
+        int initialBookedStanding = 750; // Initialt bookede for hvert event (simulering)
+
+        for (Event event : eventsInHall1) {
+            int currentBookedCount = new Random().nextInt(initialBookedStanding - 100) + 100; // Random mellem 100 og 750
+            int currentAvailableStanding = standingFloor.getCapacity() - currentBookedCount;
+
+            for (int i = 0; i < currentBookedCount; i++) {
+                EventSeat bookedStandingSeat = new EventSeat();
+                bookedStandingSeat.setEvent(event);
+                bookedStandingSeat.setSeat(null);
+                bookedStandingSeat.setArea(standingFloor);
+                bookedStandingSeat.setStatus("BOOKED");
+                allEventSeatsToSave.add(bookedStandingSeat);
+            }
+
+            for (int i = 0; i < currentAvailableStanding; i++) {
+                EventSeat freeStandingSeat = new EventSeat();
+                freeStandingSeat.setEvent(event);
+                freeStandingSeat.setSeat(null);
+                freeStandingSeat.setArea(standingFloor);
+                freeStandingSeat.setStatus("FREE");
+                allEventSeatsToSave.add(freeStandingSeat);
+            }
+            System.out.println("Ståpladser for " + event.getTitle() + ": " + currentBookedCount + " bookede, " + currentAvailableStanding + " ledige");
+        }
+
+
         // VIP Balkon Venstre (Koncert Arena):
-        allEventSeatsToSave.addAll(createAndAssignSeats(vipLeft, 2, 10, rockConcert, 0.3));
-
-        // VIP Balkon Højre (Koncert Arena):
-        allEventSeatsToSave.addAll(createAndAssignSeats(vipRight, 2, 10, rockConcert, 0.3));
-
-        // VIP Balkon Bag (Koncert Arena):
-        allEventSeatsToSave.addAll(createAndAssignSeats(vipBack, 6, 15, rockConcert, 0.4));
-
-        // 5. Simuler ståpladser for Koncert Arena (for rockConcert)
-        int totalStandingCapacity = standingFloor.getCapacity();
-        int bookedStandingCount = 750;
-        int availableStanding = totalStandingCapacity - bookedStandingCount;
-
-        for (int i = 0; i < bookedStandingCount; i++) {
-            EventSeat bookedStandingSeat = new EventSeat();
-            bookedStandingSeat.setEvent(rockConcert);
-            bookedStandingSeat.setSeat(null);
-            bookedStandingSeat.setArea(standingFloor);
-            bookedStandingSeat.setStatus("BOOKED");
-            //...
-            allEventSeatsToSave.add(bookedStandingSeat);
+        // Disse skal genereres for alle relevante events.
+        List<Event> eventsWithVipSeating = List.of(
+                rockConcert, jazzNight, tupacConcert, mileyCyrusConcert,
+                stormzyConcert, aminJensen, popsiKrelle, rollingStones, gorillazConcert,
+                frankSinatra, taylorSwift // Alle events i Hall 1, der skal have VIP-sæder
+        );
+        for (Event event : eventsWithVipSeating) {
+            double prob = new Random().nextDouble() * 0.4 + 0.1; // Random booking mellem 10-50%
+            allEventSeatsToSave.addAll(createAndAssignSeats(vipLeft, 2, 10, event, prob));
+            allEventSeatsToSave.addAll(createAndAssignSeats(vipRight, 2, 10, event, prob));
+            allEventSeatsToSave.addAll(createAndAssignSeats(vipBack, 6, 15, event, prob));
         }
 
-        for (int i = 0; i < availableStanding; i++) {
-            EventSeat freeStandingSeat = new EventSeat();
-            freeStandingSeat.setEvent(rockConcert);
-            freeStandingSeat.setSeat(null);
-            freeStandingSeat.setArea(standingFloor);
-            freeStandingSeat.setStatus("FREE");
-            //...
-            allEventSeatsToSave.add(freeStandingSeat);
-        }
-        System.out.println("Ståpladser for Rock Concert: " + bookedStandingCount + " bookede, " + availableStanding + " ledige");
 
         // 6. Setup Konference Salen seating layout
         Area conferenceMain = new Area();
@@ -178,13 +326,15 @@ public class InitData implements CommandLineRunner {
         conferenceMain.setSeats(conferenceSeats);
 
         // Assign EventSeats to all events in Hall 2
-        List<Event> eventsInConference = List.of(comedyShow, indieBand);
-        for (Event event : eventsInConference) {
+        List<Event> eventsInConferenceHall = List.of(comedyShow, indieBand, ørkenensSønner, obamaForedrag,
+                jarlTuxenForedrag, jaronKahalaniForedrag, simonShineForedrag); // ALLE i Hall 2
+        for (Event event : eventsInConferenceHall) {
             for (Seat seat : conferenceSeats) {
                 EventSeat es = new EventSeat();
                 es.setEvent(event);
                 es.setSeat(seat);
-                if (Math.random() < 0.25) {
+                es.setArea(conferenceMain); // Sæt area for Conference Hall sæder
+                if (Math.random() < 0.25) { // 25% chance for at være booket
                     es.setStatus("BOOKED");
                 } else {
                     es.setStatus("FREE");
@@ -202,35 +352,41 @@ public class InitData implements CommandLineRunner {
 
     // Denne metode er en hjælperfunktion og skal ligge inden for InitData klassen.
     private List<EventSeat> createAndAssignSeats(Area area, int rows, int cols, Event event, double bookingProbability) {
-        List<Seat> seats = new ArrayList<>();
-        List<EventSeat> eventSeats = new ArrayList<>();
-
-        for (int r = 1; r <= rows; r++) {
-            for (int c = 1; c <= cols; c++) {
-                Seat seat = new Seat();
-                seat.setRowNumber(r);
-                seat.setSeatNumber(c);
-                seat.setArea(area);
-                seats.add(seat);
+        // Først, find eller opret sæderne for dette specifikke område
+        List<Seat> seats = seatRepository.findByArea_AreaId(area.getAreaId());
+        if (seats.isEmpty()) { // Hvis sæderne ikke findes endnu, opret dem
+            for (int r = 1; r <= rows; r++) {
+                for (int c = 1; c <= cols; c++) {
+                    Seat seat = new Seat();
+                    seat.setRowNumber(r);
+                    seat.setSeatNumber(c);
+                    seat.setArea(area);
+                    seats.add(seat);
+                }
             }
+            seatRepository.saveAll(seats); // Gem de nye sæder
         }
-        seatRepository.saveAll(seats);
 
+        List<EventSeat> eventSeats = new ArrayList<>();
         Random random = new Random();
 
         for (Seat seat : seats) {
-            EventSeat es = new EventSeat();
-            es.setEvent(event);
-            es.setSeat(seat);
-            es.setArea(area); // <-- TILFØJ DENNE LINJE
-            if (random.nextDouble() < bookingProbability) {
-                es.setStatus("BOOKED");
-            } else {
-                es.setStatus("FREE");
+            // Tjek om EventSeat allerede eksisterer for dette Event og Seat
+            // Dette forhindrer duplikater, hvis InitData køres flere gange (uden at rydde DB)
+            if (!eventSeatRepository.existsByEvent_EventIdAndSeat_SeatId(event.getEventId(), seat.getSeatId())) {
+                EventSeat es = new EventSeat();
+                es.setEvent(event);
+                es.setSeat(seat);
+                es.setArea(area);
+                if (random.nextDouble() < bookingProbability) {
+                    es.setStatus("BOOKED");
+                } else {
+                    es.setStatus("FREE");
+                }
+                es.setHeldUntil(null);
+                es.setSessionId(null);
+                eventSeats.add(es);
             }
-            es.setHeldUntil(null);
-            es.setSessionId(null);
-            eventSeats.add(es);
         }
         return eventSeats;
     }
