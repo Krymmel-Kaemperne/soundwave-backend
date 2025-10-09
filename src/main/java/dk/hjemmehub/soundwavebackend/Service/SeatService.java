@@ -2,7 +2,7 @@ package dk.hjemmehub.soundwavebackend.Service;
 
 import dk.hjemmehub.soundwavebackend.DTO.SeatDto;
 import dk.hjemmehub.soundwavebackend.Model.EventSeat;
-import dk.hjemmehub.soundwavebackend.DTO.SeatReservationRequest;
+import dk.hjemmehub.soundwavebackend.DTO.ReservationRequestDto;
 import dk.hjemmehub.soundwavebackend.Repository.EventSeatRepository;
 // org.hibernate.Session import removed (unused after cache removal)
 import org.springframework.transaction.annotation.Transactional;
@@ -101,6 +101,7 @@ public class SeatService {
     }
 
     public void reserveSeatsBulk(Long eventId, SeatReservationRequest request) {
+
         List<Long> seatIds = request.getSeatIds();
         var seats = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdIn(eventId, seatIds);
 
