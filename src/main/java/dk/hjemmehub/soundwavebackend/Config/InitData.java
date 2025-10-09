@@ -229,7 +229,7 @@ public class InitData implements CommandLineRunner {
 
         // 3. Opret Areas for Hall 1 (Koncert Arena)
         Area standingFloor = new Area();
-        standingFloor.setName("Gulvet (Ståpladser)");
+        standingFloor.setName("Floor");
         standingFloor.setType("standing");
         standingFloor.setCapacity(1000);
         standingFloor.setHall(hall1);
