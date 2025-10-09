@@ -249,6 +249,11 @@ public class SeatService {
                         .filter(es -> es.getArea() != null && es.getArea().getAreaId().equals(area.getAreaId()))
                         .filter(es -> ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())))
                         .count(); // <-- Nu tæller den korrekt!
+                System.out.println("=== STANDING AREA DEBUG ===");
+                System.out.println("Area: " + area.getName());
+                System.out.println("Total capacity: " + area.getCapacity());
+                System.out.println("Booked count: " + bookedCountForArea);
+                System.out.println("Available: " + (area.getCapacity() - bookedCountForArea));
                 seatDtosForArea = List.of();
             } else { // Seating area
                 // Use pre-grouped seats by area
