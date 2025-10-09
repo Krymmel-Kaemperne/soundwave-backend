@@ -1,6 +1,9 @@
 version: "3.9"
 
 services:
+  # -------------------------------
+  # MySQL database
+  # -------------------------------
   mysql:
     image: mysql:8.0
     container_name: soundwave-mysql
@@ -22,6 +25,9 @@ services:
       retries: 10
       start_period: 10s
 
+  # -------------------------------
+  # Spring Boot backend (API)
+  # -------------------------------
   backend:
     image: soundwave/backend:latest
     container_name: soundwave-backend
@@ -33,15 +39,32 @@ services:
       SPRING_DATASOURCE_USERNAME: sounduser
       SPRING_DATASOURCE_PASSWORD: soundpass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      #SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: prod
     ports:
       - "8080:8080"
     networks:
       - soundwave-net
 
+  # -------------------------------
+  # Frontend (Vanilla JS + Nginx)
+  # -------------------------------
+  frontend:
+    image: ghcr.io/krymmel-kaemperne/soundwave-frontend:latest
+    container_name: soundwave-frontend
+    pull_policy: always
+    depends_on:
+      - backend
+    ports:
+      - "5500:80" # Serve on localhost:3000
+    networks:
+      - soundwave-net
+    # Only if you use relative API paths (see nginx.conf section below)
+
+# -------------------------------
+# Volumes & network
+# -------------------------------
 volumes:
   mysql_data:
 
-# 👇 this part was missing
 networks:
   soundwave-net:
