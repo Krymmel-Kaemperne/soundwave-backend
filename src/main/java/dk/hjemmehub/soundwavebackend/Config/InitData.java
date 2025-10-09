@@ -54,7 +54,7 @@ public class InitData implements CommandLineRunner {
                 "Red Hot Chili Peppers",
                 "Gør dig klar til en aften med ren, uforfalsket funk-rock energi! De legendariske Red Hot Chili Peppers indtager scenen og leverer et show, der spænder over årtiers ikoniske hits. Fra de sjælfulde melodier i 'Under the Bridge' til den rå kraft i 'Give It Away' – oplev Fleas baslinjer, John Frusciantes guitar-magi og Anthony Kiedis' karismatiske vokal live. Dette er ikke bare en koncert; det er en historielektion i rock and roll.",
                 BigDecimal.valueOf(500), "Scheduled",
-                LocalDateTime.of(2025, 11, 1, 20, 0), hall1
+                LocalDateTime.of(2025,  11, 1, 20, 0), hall1
         );
         rockConcert.setImageUrl("/images/Red-Hot-Chili-Peppers-Tour.webp");
         rockConcert.setIsVisible(true);
