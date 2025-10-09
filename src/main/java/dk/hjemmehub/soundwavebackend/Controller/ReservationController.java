@@ -27,7 +27,9 @@ public class ReservationController {
             ReservationConfirmationDto confirmation = reservationService.createReservation(reservationRequest);
             return ResponseEntity.ok(confirmation);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Booking failed: " + e.getMessage());
+            e.printStackTrace(); // viser stacktrace i IntelliJ
+            String message = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            return ResponseEntity.badRequest().body("Booking failed: " + message);
         }
     }
 

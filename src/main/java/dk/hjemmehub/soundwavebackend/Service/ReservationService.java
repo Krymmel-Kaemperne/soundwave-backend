@@ -3,17 +3,14 @@ package dk.hjemmehub.soundwavebackend.Service;
 import dk.hjemmehub.soundwavebackend.DTO.ReservationConfirmationDto;
 import dk.hjemmehub.soundwavebackend.DTO.ReservationRequestDto;
 import dk.hjemmehub.soundwavebackend.DTO.StandingDto;
-import dk.hjemmehub.soundwavebackend.Model.Area;
-import dk.hjemmehub.soundwavebackend.Model.EventSeat;
-import dk.hjemmehub.soundwavebackend.Model.Reservation;
-import dk.hjemmehub.soundwavebackend.Repository.AreaRepository;
-import dk.hjemmehub.soundwavebackend.Repository.EventSeatRepository;
-import dk.hjemmehub.soundwavebackend.Repository.ReservationRepository;
+import dk.hjemmehub.soundwavebackend.Model.*;
+
+import dk.hjemmehub.soundwavebackend.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 public class ReservationService {
@@ -25,69 +22,105 @@ public class ReservationService {
     private EventSeatRepository eventSeatRepository;
 
     @Autowired
+    private SeatRepository seatRepository;
+
+    @Autowired
     private AreaRepository areaRepository;
 
-    //Create Reservation
-    public ReservationConfirmationDto createReservation(ReservationRequestDto reservationRequest) {
-        Reservation reservation = new Reservation();
-        reservation.setEventId(reservationRequest.getEventId());
-        reservation.setUserName(reservationRequest.getCustomerName());
-        reservation.setUserEmail(reservationRequest.getCustomerEmail());
-        reservation.setTotalPrice(BigDecimal.valueOf(reservationRequest.getTotalPrice()));
+    @Autowired
+    private ReservationSeatRepository reservationSeatRepository;
 
+    @Autowired
+    private ReservationAreaRepository reservationAreaRepository;
+
+    public ReservationConfirmationDto createReservation(ReservationRequestDto request) {
+
+        System.out.println("=== CREATE RESERVATION DEBUG ===");
+        System.out.println("EventId: " + request.getEventId());
+        System.out.println("Customer: " + request.getCustomerName());
+        System.out.println("SeatIds: " + request.getSeatIds());
+        System.out.println("StandingAreas: " + request.getStandingAreas());
+
+        if (request.getEventId() == null) {
+            throw new RuntimeException("EventId cannot be null!");
+        }
+
+
+
+
+        // 1️⃣ Lav selve reservationen
+        Reservation reservation = new Reservation();
+        reservation.setEventId(request.getEventId());
+        reservation.setUserName(request.getCustomerName());
+        reservation.setUserEmail(request.getCustomerEmail());
+        reservation.setTotalPrice(BigDecimal.valueOf(request.getTotalPrice()));
+        reservation.setStatus("confirmed");
         Reservation saved = reservationRepository.save(reservation);
 
-        // 🔧 Marker sæder som reserverede
-        if (reservationRequest.getSeatIds() != null && !reservationRequest.getSeatIds().isEmpty()) {
-            for (Long seatId : reservationRequest.getSeatIds()) {
-                List<EventSeat> seats = eventSeatRepository.findByEvent_EventIdAndSeat_SeatIdIn(
-                        reservationRequest.getEventId(), List.of(seatId)
-                );
+        // 2️⃣ Gem seats
+        if (request.getSeatIds() != null) {
+            for (Long seatId : request.getSeatIds()) {
 
-                if (seats.isEmpty()) {
-                    throw new RuntimeException(
-                            "Seat not found for eventId " + reservationRequest.getEventId() + " and seatId " + seatId);
-                }
+                // --> Tjek at sædet rent faktisk eksisterer
+                Seat seat = seatRepository.findById(seatId)
+                        .orElseThrow(() -> new RuntimeException("Seat not found: " + seatId));
 
-                EventSeat eventSeat = seats.get(0);
+                // --> Find eventSeat og marker det reserveret
+                EventSeat eventSeat = eventSeatRepository
+
+                        .findByEvent_EventIdAndSeat_SeatId(request.getEventId(), seatId)
+                        .orElseThrow(() -> new RuntimeException("EventSeat not found for seat: " + seatId));
+
                 if (eventSeat.isReserved()) {
                     throw new RuntimeException("Seat " + seatId + " is already reserved!");
                 }
 
                 eventSeat.setReserved(true);
                 eventSeatRepository.save(eventSeat);
+
+                // --> Gem koblingen i Reservation_Seat
+                ReservationSeat rs = new ReservationSeat();
+
+                System.out.println("SeatIds from request: " + request.getSeatIds());
+                System.out.println("StandingAreas from request: " + request.getStandingAreas());
+
+                rs.setReservationId(saved.getReservationId());
+                rs.setSeatId(seatId);
+                reservationSeatRepository.save(rs);
             }
         }
 
-        // 🔧 Fjern antallet af ståpladser
-        if (reservationRequest.getStandingAreas() != null && !reservationRequest.getStandingAreas().isEmpty()) {
-            for (StandingDto standingDto : reservationRequest.getStandingAreas()) {
+        // 3️⃣ Gem ståpladser
+        if (request.getStandingAreas() != null) {
+            for (StandingDto standingDto : request.getStandingAreas()) {
 
                 Area area = areaRepository.findById(standingDto.getAreaId())
                         .orElseThrow(() -> new RuntimeException("Area not found: " + standingDto.getAreaId()));
 
-                // 🔧 Undgå NullPointerException hvis nogle felter er null
-                int count = standingDto.getCount() != null ? standingDto.getCount() : 0;
-
-                if (area.getCapacity() < count) {
-                    throw new RuntimeException(
-                            "Not enough standing places left in area: " + area.getName());
+                if (area.getCapacity() < standingDto.getCount()) {
+                    throw new RuntimeException("Not enough capacity for area: " + area.getName());
                 }
 
-                area.setCapacity(area.getCapacity() - count);
+                // Fjern antal ståpladser
+                area.setCapacity(area.getCapacity() - standingDto.getCount());
                 areaRepository.save(area);
+
+                // Gem koblingen i Reservation_Area
+                ReservationArea ra = new ReservationArea();
+                ra.setReservationId(saved.getReservationId());
+                ra.setAreaId(standingDto.getAreaId());
+                ra.setStandingCount(standingDto.getCount());
+                reservationAreaRepository.save(ra);
             }
         }
 
-        //Returner confirmation
+        // 4️⃣ Svar tilbage til frontend
         ReservationConfirmationDto response = new ReservationConfirmationDto();
         response.setCustomerName(saved.getUserName());
         response.setCustomerEmail(saved.getUserEmail());
-        response.setTotalPrice(saved.getTotalPrice().doubleValue());
+        response.setTotalPrice(request.getTotalPrice());
         response.setStatus("confirmed");
 
         return response;
     }
-
-    //Man kan lave metoder til at annulere eller slette ordre
 }
