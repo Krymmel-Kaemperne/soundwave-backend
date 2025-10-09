@@ -1,6 +1,6 @@
 package dk.hjemmehub.soundwavebackend.Controller;
 
-import dk.hjemmehub.soundwavebackend.DTO.SeatReservationRequest;
+import dk.hjemmehub.soundwavebackend.DTO.ReservationRequestDto;
 import dk.hjemmehub.soundwavebackend.Service.SeatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +24,7 @@ public class SeatController {
     }
 
     @PostMapping("/reserve")
-    public ResponseEntity<?> reserveSeatsBulk(@PathVariable Long eventId, @RequestBody SeatReservationRequest request) {
+    public ResponseEntity<?> reserveSeatsBulk(@PathVariable Long eventId, @RequestBody ReservationRequestDto request) {
         seatService.reserveSeatsBulk(eventId, request);
         return ResponseEntity.ok().body("reserved-bulk");
     }
