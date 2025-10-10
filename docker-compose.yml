@@ -29,7 +29,7 @@ services:
   # Spring Boot backend (API)
   # -------------------------------
   backend:
-    image: soundwave/backend:latest
+    image: ghcr.io/krymmel-kaemperne/soundwave-backend:latest
     container_name: soundwave-backend
     depends_on:
       mysql:

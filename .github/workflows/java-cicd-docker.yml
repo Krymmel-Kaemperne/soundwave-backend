@@ -40,17 +40,15 @@ jobs:
 
       # Byg Docker image ud fra Dockerfile (med lag-cache)
       - name: Byg Docker image
-        run: docker build --cache-from=type=gha --cache-to=type=gha,mode=max -t soundwave/backend:latest .
+        run: docker build --cache-from=type=gha --cache-to=type=gha,mode=max -t ghcr.io/krymmel-kaemperne/soundwave-backend:latest .
 
-      # (Valgfrit) Login og push Docker image til container registry
-      # Fjern kommentar-tegn (#) for at aktivere
-      #
-      # - name: Log ind på GitHub Container Registry
-      #   uses: docker/login-action@343f7e2d3c6c04b7edfdc972a7d7a84f7f4b4ad7 # v3.2.2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      #
-      # - name: Push Docker image
-      #   run: docker push ghcr.io/${{ github.repository_owner }}/backend:latest
+      # Login og push Docker image til container registry
+      - name: Log ind på GitHub Container Registry
+        uses: docker/login-action@343f7e2d3c6c04b7edfdc972a7d7a84f7f4b4ad7 # v3.2.2
+        with:
+         registry: ghcr.io
+         username: ${{ github.actor }}
+         password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image
+        run: docker push ghcr.io/krymmel-kaemperne/soundwave-backend:latest
