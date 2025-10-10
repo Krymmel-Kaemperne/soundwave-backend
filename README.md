@@ -18,7 +18,7 @@ docker compose up -d
 Dette starter tre services:
 - **MySQL database** (port 3306, kun tilgængelig på localhost)
 - **Spring Boot backend** (port 8080)
-- **Frontend** (port 5500)
+- **Frontend** (port 5500) (http://127.0.0.1:5500)
 
 ### 2. Tjek status på services
 
