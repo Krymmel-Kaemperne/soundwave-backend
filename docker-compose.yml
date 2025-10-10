@@ -1,0 +1,83 @@
+version: "3.9"
+
+services:
+  # -------------------------------
+  # MySQL database
+  # -------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: soundwave-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: soundwave
+      MYSQL_USER: sounduser
+      MYSQL_PASSWORD: soundpass
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - soundwave-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # -------------------------------
+  # Spring Boot backend (API)
+  # -------------------------------
+  backend:
+    image: ghcr.io/krymmel-kaemperne/soundwave-backend:latest
+    container_name: soundwave-backend
+    pull_policy: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/soundwave
+      SPRING_DATASOURCE_USERNAME: sounduser
+      SPRING_DATASOURCE_PASSWORD: soundpass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - soundwave-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/events"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # -------------------------------
+  # Frontend (Vanilla JS + Nginx)
+  # -------------------------------
+  frontend:
+    image: ghcr.io/krymmel-kaemperne/soundwave-frontend:latest
+    container_name: soundwave-frontend
+    pull_policy: always
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5500:5500"  # Match internal port from Dockerfile (EXPOSE 5500)
+    networks:
+      - soundwave-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5500"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# -------------------------------
+# Volumes & network
+# -------------------------------
+volumes:
+  mysql_data:
+
+networks:
+  soundwave-net:
