@@ -7,7 +7,7 @@ import java.util.UUID;
 public class SessionService {
 
     public String generateUniqueSessionId() {
-        // Genererer en universelt unik ID
+        // Genererer en universelt unik ID for brugere
         return UUID.randomUUID().toString();
     }
 }

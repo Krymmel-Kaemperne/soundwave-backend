@@ -13,7 +13,6 @@ public class AreaDto {
         this.capacity = capacity;
     }
 
-    // getters
     public Long getAreaId() {
         return areaId;
     }

@@ -9,8 +9,6 @@ public class ReservationConfirmationDto {
 
     public ReservationConfirmationDto() {}
 
-
-    // GETTERS AND SETTERS
     public String getCustomerName() {
         return customerName;
     }

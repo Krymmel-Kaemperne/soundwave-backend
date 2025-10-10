@@ -4,7 +4,7 @@ import java.util.List;
 
 public class SeatHoldRequestDTO {
     private List<Long> seatIds;
-    private String sessionId; // Den session ID kunden allerede har (fra frontend localStorage f.eks.)
+    private String sessionId;
 
     public SeatHoldRequestDTO() {}
 
@@ -13,7 +13,6 @@ public class SeatHoldRequestDTO {
         this.sessionId = sessionId;
     }
 
-    // --- Getters ---
     public List<Long> getSeatIds() {
         return seatIds;
     }
@@ -22,7 +21,6 @@ public class SeatHoldRequestDTO {
         return sessionId;
     }
 
-    // --- Setters ---
     public void setSeatIds(List<Long> seatIds) {
         this.seatIds = seatIds;
     }

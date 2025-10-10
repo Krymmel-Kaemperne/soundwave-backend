@@ -48,7 +48,7 @@ public class ReservationService {
             throw new RuntimeException("EventId cannot be null!");
         }
 
-        // 1️⃣ Lav selve reservationen
+        // Lav selve reservationen
         Reservation reservation = new Reservation();
         reservation.setEventId(request.getEventId());
         reservation.setUserName(request.getCustomerName());
@@ -57,7 +57,7 @@ public class ReservationService {
         reservation.setStatus("confirmed");
         Reservation saved = reservationRepository.save(reservation);
 
-        // 2️⃣ Gem seats
+        // Gem seats
         if (request.getSeatIds() != null && !request.getSeatIds().isEmpty()) {
             for (Long seatId : request.getSeatIds()) {
 
@@ -70,15 +70,15 @@ public class ReservationService {
                         .findByEvent_EventIdAndSeat_SeatId(request.getEventId(), seatId)
                         .orElseThrow(() -> new RuntimeException("EventSeat not found for seat: " + seatId));
 
-                // ✅ KUN tjek for permanent BOOKED - HELD er OK at konvertere
+                // tjek for permanent BOOKED
                 if ("BOOKED".equals(eventSeat.getStatus())) {
                     throw new RuntimeException("Seat " + seatId + " is already permanently booked!");
                 }
 
                 // Konverter HELD eller FREE til BOOKED
                 eventSeat.setStatus("BOOKED");
-                eventSeat.setHeldUntil(null);  // Ryd hold-data
-                eventSeat.setSessionId(null);  // Ryd session
+                eventSeat.setHeldUntil(null);
+                eventSeat.setSessionId(null);
                 eventSeatRepository.save(eventSeat);
 
                 // Gem koblingen i Reservation_Seat
@@ -89,14 +89,14 @@ public class ReservationService {
             }
         }
 
-        // 3️⃣ Gem ståpladser
+        // Gem ståpladser
         if (request.getStandingAreas() != null && !request.getStandingAreas().isEmpty()) {
             for (StandingDto standingDto : request.getStandingAreas()) {
                 if (standingDto.getCount() == null || standingDto.getCount() <= 0) {
                     continue;
                 }
 
-                // Find de ledige "EventSeat" records for ståpladser
+                // Find de ledige EventSeats
                 List<EventSeat> availableSpots = eventSeatRepository.findAvailableStandingSpots(
                         request.getEventId(),
                         standingDto.getAreaId(),
@@ -122,7 +122,7 @@ public class ReservationService {
             }
         }
 
-        // 4️⃣ Svar tilbage til frontend
+        // Svar tilbage til frontend
         ReservationConfirmationDto response = new ReservationConfirmationDto();
         response.setCustomerName(saved.getUserName());
         response.setCustomerEmail(saved.getUserEmail());

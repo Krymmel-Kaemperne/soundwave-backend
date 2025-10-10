@@ -19,8 +19,8 @@ import java.util.UUID;
         "http://localhost:3000",
         "http://127.0.0.1:8080",
         "http://localhost:8080",
-        "file:///"  // For local file access
-}) // Updated to include more common development ports
+        "file:///"
+})
 public class ImageUploadController {
 
     @PostMapping("/image")

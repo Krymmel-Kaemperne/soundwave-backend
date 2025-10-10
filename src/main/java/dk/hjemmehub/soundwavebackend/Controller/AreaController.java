@@ -29,8 +29,9 @@ public class AreaController {
 
     // POST /halls/{hallId}/areas/{areaId}/setup?rows=10&cols=20
     @GetMapping("/{hallId}/areas/{areaId}/setup/{rows}/{cols}")
-    public String setupSeatsForArea(@PathVariable Long hallId, @PathVariable Long areaId, @PathVariable int rows, @PathVariable int cols) {
-        // hallId currently unused; areaId is authoritative
+    public String setupSeatsForArea(
+            @PathVariable Long hallId, @PathVariable Long areaId,
+            @PathVariable int rows, @PathVariable int cols) {
         seatService.setupSeats(areaId, rows, cols);
         return "setup-complete";
     }

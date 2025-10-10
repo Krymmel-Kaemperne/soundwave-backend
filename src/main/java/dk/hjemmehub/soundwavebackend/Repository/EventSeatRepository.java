@@ -15,36 +15,37 @@ import java.util.Optional;
 
 public interface EventSeatRepository extends JpaRepository<EventSeat, Long> {
 
-    // ✅ FIX HER: Brug LEFT JOIN for at inkludere ståpladser (hvor seat er NULL)
+    // Finder alle EventSeats for et event. Inkl. ståpladser hvor sædet er (NULL).
     @Query("SELECT es FROM EventSeat es JOIN FETCH es.event LEFT JOIN FETCH es.seat LEFT JOIN FETCH es.area WHERE es.event.eventId = :eventId")
     List<EventSeat> findByEvent_EventId(Long eventId);
 
-    // Paginated version for large datasets
-    // ✅ FIX HER (og muligvis fjern es.seat.area hvis det ikke bruges direkte for ståpladser i paginering)
+    // Paginated version.
     @Query(value = "SELECT es FROM EventSeat es LEFT JOIN FETCH es.seat LEFT JOIN FETCH es.area WHERE es.event.eventId = :eventId",
             countQuery = "SELECT COUNT(es) FROM EventSeat es WHERE es.event.eventId = :eventId")
     Page<EventSeat> findByEvent_EventId(Long eventId, Pageable pageable);
 
-    // Optimized query with JOIN FETCH for specific seats - denne er kun for siddepladser, så den kan være en JOIN
+    // Finder EventSeats for specifikke siddepladser inden for et event, inkl. tilhørende Seat/Area/Event.
     @Query("SELECT es FROM EventSeat es JOIN FETCH es.event JOIN FETCH es.seat JOIN FETCH es.seat.area WHERE es.event.eventId = :eventId AND es.seat.seatId IN :seatIds")
     List<EventSeat> findByEvent_EventIdAndSeat_SeatIdIn(Long eventId, List<Long> seatIds);
 
-    // Også denne bør være LEFT JOIN på seat/area, hvis du vil bruge den til både sidde- og ståpladser
+    // Finder en enkelt EventSeat for et specifikt event og sæde ID.
     Optional<EventSeat> findByEvent_EventIdAndSeat_SeatId(Long eventId, Long seatId);
 
+    // Tjekker om en EventSeat eksisterer for et givet event og sæde ID.
     boolean existsByEvent_EventIdAndSeat_SeatId(Long eventId, Long seatId);
 
+    // Finder EventSeats holdt af en specifik session for et event.
     List<EventSeat> findByEvent_EventIdAndStatusAndSessionId(Long eventId, String status, String sessionId);
 
-    // Denne er med PESSIMISTIC_WRITE, og er sandsynligvis kun for sæder (ikke ståpladser),
-    // så en INNER JOIN på seat er nok OK her
+    // Finder EventSeats for specifikke siddepladser med pessimistisk lås for at forhindre race conditions.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT es FROM EventSeat es JOIN FETCH es.event JOIN FETCH es.seat JOIN FETCH es.seat.area WHERE es.event.eventId = :eventId AND es.seat.seatId IN :seatIds")
     List<EventSeat> findByEvent_EventIdAndSeat_SeatIdInWithLock(Long eventId, List<Long> seatIds);
 
+    // Finder EventSeats med status "HELD", hvis hold-tiden er udløbet.
     List<EventSeat> findByStatusAndHeldUntilBefore(String status, LocalDateTime heldUntil);
 
-    // ✅ VIGTIGT: Denne Native Query er fortsat den bedste måde at tælle/finde konkrete ståpladser
+    // Native query til at finde et specifikt antal ledige ståpladser for et event og område.
     @Query(value = "SELECT * FROM event_seat es WHERE es.event_id = :eventId AND es.area_id = :areaId AND es.seat_id IS NULL AND es.status = 'FREE' LIMIT :count", nativeQuery = true)
     List<EventSeat> findAvailableStandingSpots(Long eventId, Long areaId, int count);
 }

@@ -34,6 +34,4 @@ public class SeatDto {
     public String getLabel() {
         return label;
     }
-
-
 }
