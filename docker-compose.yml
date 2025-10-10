@@ -63,16 +63,15 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "127.0.0.1:5500:80" # Serve on localhost:5500
+      - "127.0.0.1:5500:5500"  # Match internal port from Dockerfile (EXPOSE 5500)
     networks:
       - soundwave-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost:5500"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    # Only if you use relative API paths (see nginx.conf section below)
 
 # -------------------------------
 # Volumes & network
