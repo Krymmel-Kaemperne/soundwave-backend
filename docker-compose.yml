@@ -45,6 +45,12 @@ services:
       - "127.0.0.1:8080:8080"
     networks:
       - soundwave-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/events"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   # -------------------------------
   # Frontend (Vanilla JS + Nginx)
@@ -54,11 +60,18 @@ services:
     container_name: soundwave-frontend
     pull_policy: always
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     ports:
       - "127.0.0.1:5500:80" # Serve on localhost:5500
     networks:
       - soundwave-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     # Only if you use relative API paths (see nginx.conf section below)
 
 # -------------------------------
