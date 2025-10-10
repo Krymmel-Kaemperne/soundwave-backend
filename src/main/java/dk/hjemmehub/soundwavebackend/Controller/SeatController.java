@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/events/{eventId}/seats")
 @CrossOrigin(origins = "*")
@@ -75,6 +77,20 @@ public class SeatController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             // Returner en fejlmeddelelse, hvis sæder ikke kan holdes
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/release-held-seats") // Ny endpoint
+    public ResponseEntity<String> releaseHeldSeats(@PathVariable Long eventId, @RequestBody Map<String, String> requestBody) {
+        String sessionId = requestBody.get("sessionId");
+        if (sessionId == null || sessionId.isEmpty()) {
+            return ResponseEntity.badRequest().body("Session ID mangler.");
+        }
+        try {
+            seatService.releaseSeatsBySessionId(eventId, sessionId);
+            return ResponseEntity.ok("Holdte sæder frigivet for session " + sessionId);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fejl ved frigivelse af sæder: " + e.getMessage());
         }
     }
 }

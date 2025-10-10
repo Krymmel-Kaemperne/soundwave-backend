@@ -16,6 +16,8 @@ import dk.hjemmehub.soundwavebackend.DTO.AreaMapDto;
 import dk.hjemmehub.soundwavebackend.DTO.EventMapDto;
 import jakarta.persistence.LockTimeoutException;
 import jakarta.persistence.PessimisticLockException;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -209,7 +211,12 @@ public class SeatService {
         return n.contains("balcony") || n.contains("balkon");
     }
 
-    // I SeatService.java -> buildEventMap()
+    private BigDecimal computeAreaPrice(BigDecimal basePrice, String areaName) {
+        BigDecimal price = basePrice != null ? basePrice : BigDecimal.ZERO;
+        if (isBalcony(areaName)) price = price.add(BigDecimal.valueOf(200));
+        return price;
+    }
+
 
     public EventMapDto buildEventMap(Long eventId) {
         var event = eventRepository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("Event not found"));
@@ -232,7 +239,8 @@ public class SeatService {
         // Use parallel stream for area processing
         var areaMapDtos = allAreasInHall.parallelStream().map(area -> {
             int bookedCountForArea;
-            Double priceForArea = event.getBasePrice() != null ? event.getBasePrice().doubleValue() : 0.0;
+
+            double priceForArea = computeAreaPrice(event.getBasePrice(), area.getName()).doubleValue();
             List<SeatMapDto> seatDtosForArea;
 
             if ("standing".equals(area.getType())) {
@@ -241,6 +249,11 @@ public class SeatService {
                         .filter(es -> es.getArea() != null && es.getArea().getAreaId().equals(area.getAreaId()))
                         .filter(es -> ("BOOKED".equals(es.getStatus()) || "HELD".equals(es.getStatus())))
                         .count(); // <-- Nu tæller den korrekt!
+                System.out.println("=== STANDING AREA DEBUG ===");
+                System.out.println("Area: " + area.getName());
+                System.out.println("Total capacity: " + area.getCapacity());
+                System.out.println("Booked count: " + bookedCountForArea);
+                System.out.println("Available: " + (area.getCapacity() - bookedCountForArea));
                 seatDtosForArea = List.of();
             } else { // Seating area
                 // Use pre-grouped seats by area
