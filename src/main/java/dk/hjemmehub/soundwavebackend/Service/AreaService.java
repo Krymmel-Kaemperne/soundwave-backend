@@ -15,7 +15,6 @@ public class AreaService {
         this.areaRepository = areaRepository;
     }
 
-    //DEN RIGTIGE METODE TIL DATABASEN
     public List<AreaDto> getAreasForHall(Long hallId) {
         var areas = areaRepository.findByHall_HallId(hallId);
 

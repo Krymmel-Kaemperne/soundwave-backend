@@ -64,24 +64,24 @@ public class SeatController {
            }
     }
 
+    // Denne metode holder sæder midlertidigt. Dette er en post fra seatSelection
     @PostMapping("/hold")
-    public ResponseEntity<String> holdSeats(@PathVariable Long eventId, @RequestBody SeatHoldRequestDTO request, HttpServletRequest httpRequest) {
-        // Hent session ID fra request DTO'en.
-        // Dette er den ID, som frontend har gemt (f.eks. i localStorage) og sender med.
+    public ResponseEntity<String> holdSeats(@PathVariable Long eventId,
+                                            @RequestBody SeatHoldRequestDTO request,
+                                            HttpServletRequest httpRequest) {
         String currentSessionId = request.getSessionId();
 
         try {
             String newSessionId = seatService.holdSeats(eventId, request.getSeatIds(), currentSessionId);
-            // Returner den session ID, der nu holder sæderne. Frontend skal gemme denne.
             return ResponseEntity.ok().body(newSessionId);
         } catch (IllegalArgumentException | IllegalStateException e) {
-            // Returner en fejlmeddelelse, hvis sæder ikke kan holdes
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    @PostMapping("/release-held-seats") // Ny endpoint
-    public ResponseEntity<String> releaseHeldSeats(@PathVariable Long eventId, @RequestBody Map<String, String> requestBody) {
+    @PostMapping("/release-held-seats")
+    public ResponseEntity<String> releaseHeldSeats(@PathVariable Long eventId,
+                                                   @RequestBody Map<String, String> requestBody) {
         String sessionId = requestBody.get("sessionId");
         if (sessionId == null || sessionId.isEmpty()) {
             return ResponseEntity.badRequest().body("Session ID mangler.");
@@ -90,7 +90,8 @@ public class SeatController {
             seatService.releaseSeatsBySessionId(eventId, sessionId);
             return ResponseEntity.ok("Holdte sæder frigivet for session " + sessionId);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fejl ved frigivelse af sæder: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body
+                    ("Fejl ved frigivelse af sæder: " + e.getMessage());
         }
     }
 }

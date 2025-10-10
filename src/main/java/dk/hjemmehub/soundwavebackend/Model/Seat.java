@@ -9,7 +9,7 @@ import jakarta.persistence.*;
            @Index(name = "idx_seat_row_seat", columnList = "row_no, seat_no"),
            @Index(name = "idx_seat_area_row", columnList = "area_id, row_no")
        })
-// Hibernate second-level cache annotation removed when caching disabled
+
 public class Seat {
 
     @Id
@@ -23,10 +23,9 @@ public class Seat {
     private int seatNumber;
 
     @ManyToOne
-    @JoinColumn(name = "area_id")  // kobler til area_id i databasen
+    @JoinColumn(name = "area_id")
     private Area area;
 
-    // getters and setters
     public Long getSeatId() {
         return seatId;
     }

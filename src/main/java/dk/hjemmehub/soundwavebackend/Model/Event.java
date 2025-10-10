@@ -1,8 +1,6 @@
 package dk.hjemmehub.soundwavebackend.Model;
 
 import jakarta.persistence.*;
-// Hibernate second-level cache annotations removed when disabling caching
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -14,7 +12,7 @@ import java.time.LocalDateTime;
            @Index(name = "idx_event_status", columnList = "status"),
            @Index(name = "idx_event_visible", columnList = "is_visible")
        })
-// @Cache(usage = CacheConcurrencyStrategy.READ_WRITE) // Temporarily disabled
+
 public class Event {
 
     @Id

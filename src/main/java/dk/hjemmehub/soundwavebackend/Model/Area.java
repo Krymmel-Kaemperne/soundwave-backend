@@ -11,27 +11,24 @@ import java.util.List;
            @Index(name = "idx_area_type", columnList = "type"),
            @Index(name = "idx_area_hall_type", columnList = "hall_id, type")
        })
-// Hibernate second-level cache annotation removed when caching disabled
+
 public class Area {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long areaId;
 
-    private String name;        // fx "VIP Balcony", "Standing Area"
-    private String type;        // "seating" eller "standing"
-    private Integer capacity;   // bruges kun hvis type = standing
+    private String name;
+    private String type;
+    private Integer capacity;
 
-    // relation til Hall
     @ManyToOne
     @JoinColumn(name = "hall_id")
     private Hall hall;
 
-    // hvis area er seating → seats
     @OneToMany(mappedBy = "area", fetch = FetchType.EAGER)
     private List<Seat> seats;
 
-    // getters/setters
     public Long getAreaId() {
         return areaId;
     }

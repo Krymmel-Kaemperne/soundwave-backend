@@ -16,7 +16,6 @@ public class ReservationSeat {
     @Column(name = "seat_id")
     private Long seatId;
 
-    // --- Getters & Setters ---
     public Long getId() {
         return id;
     }

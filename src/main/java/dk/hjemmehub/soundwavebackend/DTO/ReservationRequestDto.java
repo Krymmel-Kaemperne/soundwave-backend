@@ -24,7 +24,6 @@ public class ReservationRequestDto {
         this.totalPrice = totalPrice;
     }
 
-    // --- Getters & Setters ---
     public List<Long> getSeatIds() {
         return seatIds;
     }

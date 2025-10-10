@@ -21,7 +21,6 @@ public class StandingDto {
                 : null;
     }
 
-    // --- Getters & Setters ---
     public Long getAreaId() {
         return areaId;
     }

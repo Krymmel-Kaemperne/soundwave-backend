@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
            @Index(name = "idx_event_seat_event_status", columnList = "event_id, status"),
            @Index(name = "idx_event_seat_session_id", columnList = "session_id")
        })
-// Hibernate second-level cache annotation removed when caching disabled
+
 public class EventSeat {
 
     @Id
@@ -65,7 +65,6 @@ public class EventSeat {
         this.sessionId = sessionId;
     }
 
-    // getters and setters
     public Long getEventSeatId() {
         return eventSeatId;
     }
@@ -99,7 +98,6 @@ public class EventSeat {
     }
 
     public void setReserved(boolean reserved) {
-        // Update status based on the boolean value
         if (reserved) {
             this.status = "BOOKED";
         } else {

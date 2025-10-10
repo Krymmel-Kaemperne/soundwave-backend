@@ -91,7 +91,6 @@ public class InitData implements CommandLineRunner {
         indieBand.setImageUrl("/images/RadioHead.webp");
         indieBand.setIsVisible(true);
 
-        // --- NYE EVENTS STARTER HER ---
         Event tupacConcert = new Event(
                 "2Pac: Hologram Resurrection",
                 "En enestående chance for at opleve legenden 2Pac 'live' igen, i en banebrydende hologramkoncert fyldt med hans største hits. En aften, der vil skrive historie!",
@@ -152,7 +151,7 @@ public class InitData implements CommandLineRunner {
                 BigDecimal.valueOf(150), "Scheduled",
                 LocalDateTime.of(2025, 12, 1, 17, 0), hall2
         );
-        jarlTuxenForedrag.setImageUrl("/images/JarlTuxen.webp"); // Placeholder
+        jarlTuxenForedrag.setImageUrl("/images/JarlTuxen.webp");
         jarlTuxenForedrag.setIsVisible(true);
 
         Event jaronKahalaniForedrag = new Event(
@@ -161,7 +160,7 @@ public class InitData implements CommandLineRunner {
                 BigDecimal.valueOf(200), "Scheduled",
                 LocalDateTime.of(2025, 12, 3, 18, 0), hall2
         );
-        jaronKahalaniForedrag.setImageUrl("/images/JaronKahalani.webp"); // Placeholder
+        jaronKahalaniForedrag.setImageUrl("/images/JaronKahalani.webp");
         jaronKahalaniForedrag.setIsVisible(true);
 
         Event simonShineForedrag = new Event(
@@ -170,7 +169,7 @@ public class InitData implements CommandLineRunner {
                 BigDecimal.valueOf(220), "Scheduled",
                 LocalDateTime.of(2025, 12, 5, 17, 30), hall2
         );
-        simonShineForedrag.setImageUrl("/images/SimonShine.webp"); // Placeholder
+        simonShineForedrag.setImageUrl("/images/SimonShine.webp");
         simonShineForedrag.setIsVisible(true);
 
         Event popsiKrelle = new Event(
@@ -179,7 +178,7 @@ public class InitData implements CommandLineRunner {
                 BigDecimal.valueOf(120), "Scheduled",
                 LocalDateTime.of(2025, 12, 8, 14, 0), hall1
         );
-        popsiKrelle.setImageUrl("/images/PopsiOgKrelle.webp"); // Placeholder
+        popsiKrelle.setImageUrl("/images/PopsiOgKrelle.webp");
         popsiKrelle.setIsVisible(true);
 
         Event rollingStones = new Event(
@@ -206,7 +205,7 @@ public class InitData implements CommandLineRunner {
                 BigDecimal.valueOf(850), "Scheduled",
                 LocalDateTime.of(2025, 12, 18, 19, 0), hall1
         );
-        frankSinatra.setImageUrl("/images/FrankSinatra.webp"); // Placeholder
+        frankSinatra.setImageUrl("/images/FrankSinatra.webp");
         frankSinatra.setIsVisible(true);
 
         Event taylorSwift = new Event(
@@ -215,7 +214,7 @@ public class InitData implements CommandLineRunner {
                 BigDecimal.valueOf(1100), "Scheduled",
                 LocalDateTime.of(2025, 12, 22, 19, 0), hall1
         );
-        taylorSwift.setImageUrl("/images/TaylorSwift.webp"); // Placeholder
+        taylorSwift.setImageUrl("/images/TaylorSwift.webp");
         taylorSwift.setIsVisible(true);
 
         // Gem alle events
@@ -256,16 +255,15 @@ public class InitData implements CommandLineRunner {
         // 4. Forbered liste til EventSeats
         List<EventSeat> allEventSeatsToSave = new ArrayList<>();
 
-        // --- TILFØJ ALLE EVENTS TIL STÅPLADSOMRÅDET ---
-        // Generer nu ståpladser for *alle* events i Hall 1
+        // Generer ståpladser for *alle* events i Hall 1
         List<Event> eventsInHall1 = List.of(rockConcert, jazzNight, tupacConcert, mileyCyrusConcert,
                 stormzyConcert, aminJensen, popsiKrelle, rollingStones, gorillazConcert,
                 frankSinatra, taylorSwift);
 
-        int initialBookedStanding = 750; // Initialt bookede for hvert event (simulering)
+        int initialBookedStanding = 750; // simulering af hver event med ståpladser
 
         for (Event event : eventsInHall1) {
-            int currentBookedCount = new Random().nextInt(initialBookedStanding - 100) + 100; // Random mellem 100 og 750
+            int currentBookedCount = new Random().nextInt(initialBookedStanding - 100) + 100; // Random ståpladser events
             int currentAvailableStanding = standingFloor.getCapacity() - currentBookedCount;
 
             for (int i = 0; i < currentBookedCount; i++) {
@@ -289,12 +287,11 @@ public class InitData implements CommandLineRunner {
         }
 
 
-        // VIP Balkon Venstre (Koncert Arena):
-        // Disse skal genereres for alle relevante events.
+        // VIP Balkon Venstre (Koncert Arena)
         List<Event> eventsWithVipSeating = List.of(
                 rockConcert, jazzNight, tupacConcert, mileyCyrusConcert,
                 stormzyConcert, aminJensen, popsiKrelle, rollingStones, gorillazConcert,
-                frankSinatra, taylorSwift // Alle events i Hall 1, der skal have VIP-sæder
+                frankSinatra, taylorSwift
         );
         for (Event event : eventsWithVipSeating) {
             double prob = new Random().nextDouble() * 0.4 + 0.1; // Random booking mellem 10-50%
@@ -327,14 +324,14 @@ public class InitData implements CommandLineRunner {
 
         // Assign EventSeats to all events in Hall 2
         List<Event> eventsInConferenceHall = List.of(comedyShow, indieBand, ørkenensSønner, obamaForedrag,
-                jarlTuxenForedrag, jaronKahalaniForedrag, simonShineForedrag); // ALLE i Hall 2
+                jarlTuxenForedrag, jaronKahalaniForedrag, simonShineForedrag);
         for (Event event : eventsInConferenceHall) {
             for (Seat seat : conferenceSeats) {
                 EventSeat es = new EventSeat();
                 es.setEvent(event);
                 es.setSeat(seat);
-                es.setArea(conferenceMain); // Sæt area for Conference Hall sæder
-                if (Math.random() < 0.25) { // 25% chance for at være booket
+                es.setArea(conferenceMain);
+                if (Math.random() < 0.25) {
                     es.setStatus("BOOKED");
                 } else {
                     es.setStatus("FREE");
@@ -345,16 +342,14 @@ public class InitData implements CommandLineRunner {
             }
         }
 
-        // Gem ALLE EventSeats samlet, helt til sidst i run() metoden!
+        // Gemmer alle EventSeats samlet
         eventSeatRepository.saveAll(allEventSeatsToSave);
         System.out.println("Database initialisering fuldført (alle EventSeats gemt).");
     }
 
-    // Denne metode er en hjælperfunktion og skal ligge inden for InitData klassen.
     private List<EventSeat> createAndAssignSeats(Area area, int rows, int cols, Event event, double bookingProbability) {
-        // Først, find eller opret sæderne for dette specifikke område
         List<Seat> seats = seatRepository.findByArea_AreaId(area.getAreaId());
-        if (seats.isEmpty()) { // Hvis sæderne ikke findes endnu, opret dem
+        if (seats.isEmpty()) {
             for (int r = 1; r <= rows; r++) {
                 for (int c = 1; c <= cols; c++) {
                     Seat seat = new Seat();
@@ -372,7 +367,6 @@ public class InitData implements CommandLineRunner {
 
         for (Seat seat : seats) {
             // Tjek om EventSeat allerede eksisterer for dette Event og Seat
-            // Dette forhindrer duplikater, hvis InitData køres flere gange (uden at rydde DB)
             if (!eventSeatRepository.existsByEvent_EventIdAndSeat_SeatId(event.getEventId(), seat.getSeatId())) {
                 EventSeat es = new EventSeat();
                 es.setEvent(event);

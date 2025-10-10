@@ -19,10 +19,8 @@ public class ReservationArea {
     @Column(name = "standing_count")
     private Integer standingCount;
 
-    // --- Constructors ---
     public ReservationArea() {}
 
-    // --- Getters & Setters ---
     public Long getId() {
         return id;
     }
