@@ -31,11 +31,12 @@ services:
   backend:
     image: ghcr.io/krymmel-kaemperne/soundwave-backend:latest
     container_name: soundwave-backend
+    pull_policy: always
     depends_on:
       mysql:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/soundwave?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/soundwave
       SPRING_DATASOURCE_USERNAME: sounduser
       SPRING_DATASOURCE_PASSWORD: soundpass
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
