@@ -44,7 +44,7 @@ jobs:
 
       # Login og push Docker image til container registry
       - name: Log ind på GitHub Container Registry
-        uses: docker/login-action@343f7e2d3c6c04b7edfdc972a7d7a84f7f4b4ad7 # v3.2.2
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
          registry: ghcr.io
          username: ${{ github.actor }}
